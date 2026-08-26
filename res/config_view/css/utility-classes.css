@@ -1,0 +1,283 @@
+* {
+    box-sizing: border-box;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: transparent;
+    height: 100vh;
+    width: 100%;
+    margin: 0px;
+    padding: 15px;
+    overflow: hidden;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 0;
+  }
+  p {
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Heading */
+  h2 {
+    font: 20px/24px Roboto-Bold;
+  }
+  h3 {
+    font: 17px/20px Roboto-Bold;
+  }
+  h4 {
+    font: 15px/18px Roboto-Bold;
+  }
+  h5 {
+    /* 13 */
+  }
+  
+  /* Fonts */
+  .f_13_15_RR {
+    font: 13px/15px Roboto-Regular;
+  }
+  .f_15_18_RR {
+    font: 15px/18px Roboto-Regular;
+  }
+  
+  /* Colors */
+  .primary-font-color {
+    /* #ffffff */
+    color: var(--vscode-inputOption-activeForeground);
+  }
+  .secondary-font-color {
+    /* #a6a6a6 */
+    color: var(--vscode-input-placeholderForeground);
+  }
+  .theme-font-color {
+    color: var(--vscode-editorSuggestWidget-highlightForeground);
+  }
+  .border-color {
+    color: var(--vscode-titleBar-activeBackground);
+  }
+  .default-green-color {
+    color: #2fba39;
+  }
+  
+  /* Background Colors */
+  .primary-bg-color {
+    /* #ffffff */
+    background-color: var(--vscode-editorWidget-background);
+  }
+  
+  /* Border Color */
+  .theme-border-color {
+    border-color: var(--vscode-editorSuggestWidget-highlightForeground);
+  }
+  .border-border-color {
+    border-color: var(--vscode-titleBar-activeBackground);
+  }
+  
+  /* Display */
+  .dF {
+    display: flex;
+  }
+  .dB {
+    display: block;
+  }
+  .dN {
+    display: none;
+  }
+
+  /* Flex */
+  .flex_direction_row {
+    flex-direction: row;
+  }
+  
+  /* Position */
+  .pR {
+    position: relative;
+  }
+  .pA {
+    position: absolute;
+  }
+  
+  /* Padding */
+  .pR14 {
+    padding-right: 14px;
+  }
+  .pR18 {
+    padding-right: 18px;
+  }
+  .pB5 {
+    padding-bottom: 5px;
+  }
+  .pL5 {
+    padding-left: 5px;
+  }
+  .pR5 {
+    padding-right: 5px;
+  }
+  .pT10 {
+    padding-top: 10px;
+  }
+  .pL10 {
+    padding-left: 10px;
+  }
+  .pR10 {
+    padding-right: 10px;
+  }
+  .pL14 {
+    padding-left: 14px;
+  }
+  .pL18 {
+    padding-left: 18px;
+  }
+  
+  /* Margin */
+  .mT25 {
+    margin-top: 25px;
+  }
+  .mR5 {
+    margin-right: 5px;
+  }
+  .mR40 {
+    margin-right: 40px;
+  }
+  .mB6 {
+    margin-bottom: 6px;
+  }
+  .mL16 {
+    margin-left: 16px;
+  }
+  .mL24 {
+    margin-left: 24px;
+  }
+  .mL20 {
+    margin-left: 20px;
+  }
+  .mL16 {
+    margin-left: 16px;
+  }
+  
+  /*Border and Border Radius */
+  .border {
+    border: 1px solid var(--vscode-settings-checkboxBorder);
+  }
+  .bR4 {
+    border-radius: 4px;
+  }
+  .bRTR4 {
+    border-top-right-radius: 4px;
+  }
+  .bRBR4 {
+    border-bottom-right-radius: 4px;
+  }
+  
+  /* Width */
+  .w100 {
+    width: 100px;
+  }
+  .w100p {
+    width: 100%;
+  }
+  .w400 {
+    width: 400px;
+  }
+  .w5p{
+    width: 5%;
+  }
+  .w10p{
+    width: 10%;
+  }
+  .w15p{
+    width: 15%;
+  }
+  .w17p{
+    width: 17%;
+  }
+  .w20p{
+    width: 20%;
+  }
+  .w23p{
+    width: 23%;
+  }
+  .w25p{
+    width: 25%;
+  }
+  .w30p{
+    width: 30%;
+  }
+  .w35p{
+    width: 35%;
+  }
+  .w37p{
+    width: 37%;
+  }
+  .w40p{
+    width: 40%;
+  }
+  .w45p {
+    width: 45%;
+  }
+  .w55p {
+    width: 55%;
+  }
+  .w75p {
+    width: 75%;
+  }
+  .w80p {
+    width: 80%;
+  }
+  .w85p {
+    width: 85%;
+  }
+  
+  /* Text Overflow */
+  .txt-overflow-ellip {
+    text-overflow: ellipsis;
+  }
+  
+  /* Overflow */
+  .overflow-hidden {
+    overflow: hidden;
+  }
+
+  .overflow-scroll {
+    overflow: scroll;
+  }
+  
+  /* Justify Content Center */
+  .justify-content-center{
+    justify-content: center;
+  }
+  
+  /* Cursor */
+  .cP {
+    cursor: pointer;
+  }
+  
+  /* Align item */
+  .align-items-center {
+    align-items: center;
+  }
+  
+  /* Justify content */
+  .justify-content-sb {
+    justify-content: space-between;
+  }
+  
+  .word-break-all{
+    word-break: break-all;
+  }
+  
+  /* White Space */
+  .ws-nowrap{
+    white-space: nowrap;
+  }
+  td.ws-normal{
+    white-space: normal;
+    word-break: break-all;
+  } 

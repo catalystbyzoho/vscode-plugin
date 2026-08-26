@@ -1,0 +1,33 @@
+@font-face {
+  font-family: "Roboto-Regular";
+  font-weight: 400;
+  font-style: normal;
+  src: url("../vendor/fonts/roboto/roboto-regular.woff2") format("woff2"),
+    url("../vendor/fonts/roboto/roboto-regular.woff") format("woff"),
+    url("../vendor/fonts/roboto/roboto-regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Roboto-Bold";
+  font-weight: 700;
+  font-style: normal;
+  src: url("../vendor/fonts/roboto/roboto-bold.woff2") format("woff2"),
+    url("../vendor/fonts/roboto/roboto-bold.woff") format("woff"),
+    url("../vendor//fonts/roboto/roboto-bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Lato-Regular";
+  font-weight: 400;
+  font-style: normal;
+  src: url("../vendor/fonts/lato/lato-regular.woff2") format("woff2"),
+    url("../vendor/fonts/lato/lato-regular.woff") format("woff"),
+    url("../vendor/fonts/lato/lato-regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: "icomoon";
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+  src: url("../vendor/fonts/font-image/icomoon.woff") format("woff"),
+    url("../vendor/fonts/font-image/icomoon.ttf") format("truetype"),
+    url("../vendor/fonts/font-image/icomoon.svg") format('svg');
+}

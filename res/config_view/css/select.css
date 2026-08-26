@@ -1,0 +1,109 @@
+/*the container must be positioned relative:*/
+.custom-select {
+  position: relative;
+  width: 177px;
+  height: 38px;
+}
+
+.custom-select select {
+  display: none; /*hide original SELECT element:*/
+}
+
+.select-selected {
+  background-color: var(--vscode-editorWidget-background);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  border-radius: 2px;
+  padding: 9px 30px 8px 12px;
+  color: var(--vscode-inputOption-activeForeground);
+  font: 15px/18px Roboto-Regular;
+  cursor: pointer;
+}
+
+/*style the arrow inside the select element:*/
+.select-selected:before {
+  content: "Active: ";
+  color: var(--vscode-input-placeholderForeground);
+  font: 15px/18px Roboto-Regular;
+}
+.select-selected:after {
+  position: absolute;
+  content: "";
+  top: 11px;
+  right: 14px;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  border: 2px solid transparent;
+  border-top-color: transparent;
+  border-right-color: var(--vscode-inputOption-activeForeground);
+  border-bottom-color: var(--vscode-inputOption-activeForeground);
+  border-left-color:  transparent;
+  transform: rotateZ(45deg);
+}
+
+/*point the arrow upwards when the select box is open (active):*/
+.select-selected.select-arrow-active:after {
+  border-top-color: var(--vscode-inputOption-activeForeground);
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  border-left-color:  var(--vscode-inputOption-activeForeground);
+  top: 15px;
+}
+
+/*style the items (options), including the selected item:*/
+.select-items > div{
+    font: 15px/15px Roboto-Regular;
+    color: var(--vscode-inputOption-activeForeground);
+    background-color: var(--vscode-editorWidget-background);
+    text-overflow: ellipsis;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+/*style items (options):*/
+.select-items {
+  position: absolute;
+  border-radius: 4px;
+  max-height: 350px;
+  width: 215px;
+  box-shadow: 10px 10px 30px #00000041;
+  border: 1px solid var(--vscode-titleBar-activeBackground);
+  top: 105%;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  overflow: auto;
+}
+
+/*hide the items when the select box is closed:*/
+.select-hide {
+  display: none;
+}
+
+.select-items > div:hover {
+  background: var(--vscode-editor-background);
+}
+
+.same-as-selected .active{
+  font: 15px/15px Roboto-Regular;
+  color: #00CC00;
+  display: block !important;
+}
+.select-items .active{
+  display: none;
+}
+.selected-text{
+  font: 15px/15px Roboto-Regular;
+  color: var(--vscode-inputOption-activeForeground);
+  padding-right: 5px;
+}
+.select-pid{
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  font: 13px/15px Roboto-Regular;
+  color: var(--vscode-input-placeholderForeground);
+  padding-top: 4px;
+}

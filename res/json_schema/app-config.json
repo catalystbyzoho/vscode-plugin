@@ -1,0 +1,85 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "zcatalyst-cli.schema.app-config.json",
+    "title": "Catalyst App Config JSON",
+    "description": "Catalyst AppSail configuration file for ZCatalyst-CLI",
+    "type": "object",
+    "properties": {
+        "command": {
+            "description": "Command to start the AppSail",
+            "type": "string"
+        },
+        "build_path": {
+            "description": "Path where the AppSail's build artifacts are located",
+            "type": "string",
+            "default": "./"
+        },
+        "stack": {
+            "description": "Stack of the AppSail",
+            "type": "string",
+            "enum": ["java8", "java11", "java17","node12", "node14", "node16", "node18", "node20", "python_3_9"]
+        },
+        "env_variables": {
+            "description": "Environment variables to be used in the AppSail",
+            "type": "object"
+        },
+        "memory": {
+            "description": "Memory configuration of the AppSail in MB",
+            "type": "number",
+            "default": 256
+        },
+        "scripts": {
+            "description": "Lifecycle script of the AppSail",
+            "type": "object",
+            "properties": {
+                "preserve": {
+                    "description": "Script to be executed before starting the AppSail during Catalyst Serve",
+                    "type": "string"
+                },
+                "postserve": {
+                    "description": "Script to be execute after closing the AppSail during Catalyst Serve",
+                    "type": "string"
+                },
+                "predeploy": {
+                    "description": "Script to be executed before packing the AppSail artifacts during Catalyst deploy",
+                    "type": "string"
+                },
+                "postdeploy": {
+                    "description": "Script to be execute after deploying the packed AppSail to development environment",
+                    "type": "string"
+                }
+            }
+        },
+        "platform": {
+            "description": "Platform to deploy the java AppSail",
+            "type": "string",
+            "enum": [ "war", "javase" ]
+        },
+        "catalyst_auth": {
+            "description": "configuration to choose whether to enable Catalyst Authentication for the AppSail",
+            "type": "boolean"
+        },
+        "login_redirect": {
+            "description": "Url to redirect the user after successful authentication",
+            "type": "string"
+        }
+    },
+    "allOf": [
+        {
+            "if": { "properties": { "stack": { "pattern": "java" }}},
+            "then": {
+                "required": ["platform"]
+            }
+        },
+        {
+            "if": { "properties": { "catalyst_auth":  { "const": true }}},
+            "then": {
+                "required": ["login_redirect"]
+            }
+        }
+    ],
+    "required": [
+        "build_path",
+        "stack"
+    ]
+}

@@ -1,0 +1,67 @@
+{
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "impliedStrict": true
+        }
+    },
+    "plugins": [
+        "prettier",
+        "@zoho/zstandard",
+        "@zoho/webperf"
+    ],
+    "extends": [
+        "plugin:@typescript-eslint/recommended",
+        "prettier",
+        "plugin:prettier/recommended"
+    ],
+    "rules": {
+        "prettier/prettier": "error",
+        "@typescript-eslint/semi": "warn",
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "@typescript-eslint/no-unused-vars": "error",
+        "@typescript-eslint/array-type": [
+            "error",
+            {
+                "default": "generic"
+            }
+        ],
+        "@typescript-eslint/no-explicit-any": [
+            "error",
+            {
+                "ignoreRestArgs": true,
+                "fixToUnknown": true
+            }
+        ],
+        "prefer-const": [
+            "error",
+            {
+                "destructuring": "all",
+                "ignoreReadBeforeAssign": false
+            }
+        ],
+        "no-console": "error",
+        "func-names": [
+            "error",
+            "as-needed"
+        ],
+        "no-continue": "error",
+        "no-duplicate-imports": "error",
+        "prefer-arrow-callback": [
+            "error",
+            {
+                "allowUnboundThis": false
+            }
+        ],
+        "curly": "warn",
+        "no-throw-literal": "warn"
+    },
+    "ignorePatterns": [
+        "out",
+        "dist",
+        "**/*.d.ts"
+    ]
+}

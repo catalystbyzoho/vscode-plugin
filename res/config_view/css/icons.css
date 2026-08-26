@@ -1,0 +1,155 @@
+/* Images */
+[class^="icon-"],
+[class*=" icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: "icomoon" !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.avatar-img {
+  background: none;
+  border-radius: 50%;
+  overflow: hidden;
+  min-width: 58px;
+  min-height: 58px;
+  max-width: 58px;
+  max-height: 58px;
+  width: 58px;
+  height: 58px;
+}
+
+.avatar-img img {
+  border-radius: 20px;
+}
+
+.icon-cat_colorlogo .path1:before {
+  content: "\e912";
+  color: rgb(34, 109, 180);
+  opacity: 0.9;
+}
+.icon-cat_colorlogo .path2:before {
+  content: "\e913";
+  margin-left: -1em;
+  color: rgb(228, 37, 39);
+  opacity: 0.9;
+}
+.icon-cat_blacklogo:before {
+  content: "\e914";
+}
+.icon-more:before {
+  content: "\e911";
+  color: var(--vscode-input-placeholderForeground);
+  font-size: 20px;
+}
+.icon-advancediofunction:before {
+  content: "\e901";
+}
+.icon-cronfunction:before {
+  content: "\e902";
+}
+.icon-apigateway:before {
+  content: "\e903";
+}
+.icon-basiciofunction:before {
+  content: "\e904";
+}
+.icon-catalystdeploy:before {
+  content: "\e905";
+}
+.icon-catalystserve:before {
+  content: "\e906";
+}
+.icon-client:before {
+  content: "\e907";
+}
+.icon-delete:before {
+  content: "\e908";
+}
+.icon-eventfunction:before {
+  content: "\e909";
+}
+.icon-functions:before {
+  content: "\e90A";
+}
+.icon-integrationfunction:before {
+  content: "\e90B";
+}
+.icon-close:before {
+  content: "\e90C";
+  font-size: 10px;
+  color: var(--vscode-input-placeholderForeground);
+}
+.icon-close:hover:before{
+  color: var(--vscode-inputOption-activeForeground);
+}
+.icon-pull:before {
+  content: "\e90D";
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--vscode-editorSuggestWidget-highlightForeground);
+}
+.icon-pull-sm:before {
+  content: "\e90D";
+  font-size: 14px;
+  color: var(--vscode-editorSuggestWidget-highlightForeground);
+}
+.icon-reinit:before {
+  content: "\e90E";
+  font-size: 20px;
+  color: var(--vscode-editorSuggestWidget-highlightForeground);
+}
+.icon-reset:before {
+  content: "\e90F";
+  font-size: 20px;
+  color: var(--vscode-editorSuggestWidget-highlightForeground);
+}
+.icon-logout:before {
+  content: "\e916";
+  font-size: 17px;
+  color: var(--vscode-input-placeholderForeground);
+}
+.logout-btn:hover .icon-logout:before {
+  color: var(--vscode-inputOption-activeForeground);
+}
+.icon-search {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+}
+.icon-search:before {
+  content: "\e910";
+  font-size: 20px;
+  color: var(--vscode-input-placeholderForeground);
+}
+.icon-refresh:before {
+  content: "\e918";
+  font-size: 20px;
+}
+.search-box:hover .icon-search:before {
+  content: "\e910";
+  font-size: 20px;
+  color: var(--vscode-inputOption-activeForeground);
+}
+.project-card:hover .icon-copyic:before {
+  content: "\e915";
+  font-size: 15px;
+  margin-left: 5px;
+  color: var(--vscode-editorSuggestWidget-highlightForeground);
+}
+
+.loader {
+  background-image: url("../images/catalyst-loader.gif");
+  background-repeat: no-repeat;
+  background-size: 70px;
+  width: 6%;
+  height: 16%;
+}

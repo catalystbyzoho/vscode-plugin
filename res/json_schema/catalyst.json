@@ -1,0 +1,170 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "zcatalyst-cli.schema.catalyst.json",
+    "title": "Catalyst JSON",
+    "description": "Catalyst project configuration file for ZCatalyst-CLI",
+    "type": "object",
+    "properties": {
+        "functions": {
+            "description": "Contains the functions configuration",
+            "type": "object",
+            "properties": {
+                "targets": {
+                    "description": "Names of the functions present in this project directory",
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                        "type": "string",
+                        "pattern": "(?!^\\d+$)^(\\w|-)+$"
+                    },
+                    "minItems": 1
+                },
+                "ignore": {
+                    "description": "Glob pattern(s) of contents to be ignored during serve/deploy ",
+                    "type":"array"
+                },
+                "source": {
+                    "description": "Path to the function's source folder",
+                    "type":"string"
+                },
+                "plugin": {
+                    "description": "Plugin to be used with the functions",
+                    "type": ["string", "object"],
+                    "properties": {
+                        "validate": {
+                            "description": "The Plugin to be used for validating the functions",
+                            "type":"string"
+                        },
+                        "build": {
+                            "description": "The Plugin to be used for building the functions during deploy",
+                            "type": "string"
+                        },
+                        "serve": {
+                            "description": "The Plugin to be used for serving the functions in local",
+                            "type": "string"
+                        }
+                    }
+                },
+                "scripts": {
+                    "description": "Configure the lifecycle scripts for Catalyst functions",
+                    "type": "object",
+                    "properties": {
+                        "preserve": {
+                            "description": "Script to execute before preparing the functions for Catalyst Serve",
+                            "type": "string"
+                        },
+                        "postserve": {
+                            "description": "Script to execute after stopping the functions during Catalyst Serve",
+                            "type": "string"
+                        },
+                        "predeploy": {
+                            "description": "Script to execute before packaging the functions to deploy to Catalyst development environment",
+                            "type": "string"
+                        },
+                        "postdeploy": {
+                            "description": "Script to execute after deploying the packed function to Catalyst development environment",
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "required": [
+                "targets",
+                "source"
+            ]
+        },
+        "client": {
+            "description": "Contains the client configuration",
+            "type": "object",
+            "properties": {
+                "source": {
+                    "description": "Path to the web client's source folder",
+                    "type": "string"
+                },
+                "plugin": {
+                    "description": "Plugin to be used with the web client",
+                    "type": ["string", "object"],
+                    "properties": {
+                        "validate": {
+                            "description": "The Plugin to be used for validating the web client",
+                            "type":"string"
+                        },
+                        "build": {
+                            "description": "The Plugin to be used for building the web client during deploy",
+                            "type": "string"
+                        },
+                        "serve": {
+                            "description": "The Plugin to be used for serving the web client in local",
+                            "type": "string"
+                        }
+                    }
+                },
+                "scripts": {
+                    "description": "Configure the lifecycle scripts for Catalyst Web Client",
+                    "type": "object",
+                    "properties": {
+                        "preserve": {
+                            "description": "Script to execute before preparing the Web Client for Catalyst Serve",
+                            "type": "string"
+                        },
+                        "postserve": {
+                            "description": "Script to execute after stopping the Web Client during Catalyst Serve",
+                            "type": "string"
+                        },
+                        "predeploy": {
+                            "description": "Script to execute before packaging the Web Client to deploy to Catalyst development environment",
+                            "type": "string"
+                        },
+                        "postdeploy": {
+                            "description": "Script to execute after deploying the packed Web Client to Catalyst development environment",
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "required": [
+                "source"
+            ]
+        },
+        "apig": {
+            "description": "Contains the API Gateway configurations",
+            "type":"object",
+            "properties": {
+                "rules": {
+                    "description": "Path to a json file that contains the API Gateway rules",
+                    "type": "string"
+                },
+                "enabled": {
+                    "description": "Enable or disable the API Gateway rules in local",
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "rules",
+                "enabled"
+            ]
+        },
+        "appsail": {
+            "description": "Contains the AppSail configurations",
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "source": {
+                        "description": "Source path of the AppSail",
+                        "type": "string"
+                    },
+                    "name": {
+                        "description": "Name of the AppSail",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "source",
+                    "name"
+                ]
+            }
+        }
+    }
+}

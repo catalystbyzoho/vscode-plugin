@@ -1,0 +1,41 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "zcatalyst-cli.schema.client-package.json",
+    "title": "Client package JSON",
+    "description": "Catalyst client configuration file for ZCatalyst-CLI",
+    "type": "object",
+    "properties": {
+        "name": {
+            "description": "Name of the web app",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-]*$"
+        },
+        "version": {
+            "description": "Version of the web app",
+            "type": "string",
+            "pattern": "(\\d+)\\.(\\d+)\\.(\\d+)"
+        },
+        "homepage": {
+            "description": "The index file of the web app",
+            "type": "string"
+        },
+        "description": {
+            "description": "The description of the web app",
+            "type": "string"
+        },
+        "login_redirect": {
+            "description": "The page where the user has to be redirected after a successful login to the web app",
+            "type": "string"
+        },
+        "404": {
+            "description": "The page to be displayed if the resource is not found",
+            "type": "string",
+            "default": "404.html"
+        }
+    },
+    "required": [
+        "name",
+        "homepage",
+        "version"
+    ]  
+}

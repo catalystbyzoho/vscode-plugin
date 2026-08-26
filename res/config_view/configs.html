@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="images/catalyst-logo.ico" />
+    <title>Catalyst - VScode Plugin</title>
+
+    <!-- Webfont CSS -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="{{custom_font_css}}"
+    />
+
+    <!-- Custom CSS -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="{{utility_css}}"
+    />
+    <link rel="stylesheet" type="text/css" media="screen" href="{{main_css}}" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="{{icons_css}}"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="{{select_css}}"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="{{scrollbar_css}}"
+    />
+  </head>
+
+  <body>
+    <section class="page-loader" style>
+      <div class="loader">
+    </section>
+    <section class="section-container" style="display: none;">
+      <section class="section-head">
+        <div class="dF w30p flex-direction-row align-items-center">
+          <div class="avatar-img"></div>
+          <div class="pL10 w85p">
+            <h4 class="primary-font-color pB5 line-ellipsis" id="avatarName"></h4>
+            <p class="f_13_15_RR secondary-font-color pB5 line-ellipsis" id="avatarEmail"></p>
+            <p class="f_13_15_RR secondary-font-color line-ellipsis" id="avatarOrgId"></p>
+          </div>
+        </div>
+        <div class="dF">
+          <div class="default-project-switch-btn">
+            <div class="btn-text pL14 pR14" id="defaultProjectNameContainer">
+              <span class="f_15_18_RR secondary-font-color">Default: </span>
+              <span class="f_15_18_RR primary-font-color pL5 w100 line-ellipsis" id="defaultProjectName">
+              </span>
+            </div>
+            <div
+              class="header-icon-btn icon-reinit cP"
+              style="margin-top: -1px;"
+              onclick="openReinit()"
+              title="Reinit"
+            >
+            </div>
+          </div>
+
+          <div class="default-project-switch-btn mL16">
+            <div class="custom-select">
+            </div>
+            <div class="header-icon-btn icon-reset cP" style="margin-top: -1px;" onclick="projectReset()" title="Reset">
+            </div>
+          </div>
+
+          <div
+            class="default-project-switch-btn mL16 btn-text cP manage-token-btn"
+            onclick="openManageTokenRightModal()"
+          >
+            <span class="f_15_18_RR theme-font-color pL18 pR18 ws-nowrap manage-token-btn"
+              >Manage Token</span
+            >
+          </div>
+
+          <div class="header-icon-btn mL16 border bR4 cP icon-refresh theme-font-color" onclick="refreshWebView()" title="Refresh">
+          </div>
+
+          <div
+            id="moreOptions"
+            class="header-icon-btn mL16 border bR4 icon-more cP"
+            onclick="showMore()"
+          ></div>
+          <div class="logout-btn dN" onclick="logout()">
+            <div class="icon-logout mR5"></div>
+            Log out
+          </div>
+        </div>
+      </section>
+      <section class="section-body">
+        <h2 class="primary-font-color pB5 line-ellipsis" id="projectName">ToDoList</h2>
+        <p class="f_13_15_RR primary-font-color line-ellipsis" id="projectId">PID: <span></span></p>
+        <div class="tab-switch">
+          <div class="tab-head">
+            <div class="tab cP mR40 active-tab" id="clientTab" onclick="tabSwitch(this)">
+              Client
+            </div>
+            <div class="tab cP mR40" id="functionTab" onclick="tabSwitch(this)">
+              Function
+            </div>
+            <div class="tab cP mR40" id="appsailTab" onclick="tabSwitch(this)">
+              AppSail
+            </div>
+            <div class="tab cP" id="apiTab" onclick="tabSwitch(this)">
+              API Gateway
+            </div>
+          </div>
+          <div class="tab-body">
+            <div id="clientTabB" class="tab" show="true">
+              <div class="tab-body-content">
+                <div class="w75p" id="tabContent">
+                  <div show-content="true">
+                    <h4 class="primary-font-color pB5 line-ellipsis" id="clientName">Client</h4>
+                    <p class="secondary-font-color f_15_18_RR line-ellipsis" id="clientUrl">
+                      
+                    </p>
+                  </div>
+                  <div class="btn-text mB6" show-content="false">
+                    <div
+                      class="lg-btn btn-text pL10 pR10 mL20 cP theme-border-color"
+                    >
+                      <span class="icon-pull-sm"></span>
+                      <span class="f_15_18_RR theme-font-color pL5"
+                        >Pull Selected</span
+                      >
+                    </div>
+                    <span class="splitter"></span>
+                    <span
+                      id="selected-count"
+                      class="secondary-font-color f_15_18_RR"
+                      >2</span
+                    >
+                    <p class="secondary-font-color f_15_18_RR pL5">Selected</p>
+                  </div>
+                </div>
+                <div class="dF">
+                  <div class="search-box pR">
+                    <div class="icon-search"></div>
+                    <input
+                      type="text"
+                      id="clientSearch"
+                      class="search-field"
+                      placeholder="Search Client Version"
+                    />
+                  </div>
+                </div>
+              </div>
+              <table class="without-checkbox" id="tableClient">
+                <thead>
+                  <tr>
+                    <th class="w15p">Application Version</th>
+                    <th class="w25p">Created By</th>
+                    <th class="w20p">Created on</th>
+                    <th class="w37p">Description</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+            <div id="functionTabB" class="tab" show="false">
+              <div class="tab-body-content">
+                <div id="tabContent">
+                  <div show-content="true">
+                    <h4 class="primary-font-color pB5">Functions</h4>
+                  </div>
+                  <div class="btn-text" show-content="false">
+                    <div class="lg-btn btn-text pL10 pR10 mL20 cP theme-border-color" onclick="pullFunctions()">
+                      <span class="icon-pull-sm"></span>
+                      <span class="f_15_18_RR theme-font-color pL5">
+                        Pull Selected
+                      </span>
+                    </div>
+                    <span class="splitter"></span>
+                    <span
+                      id="selected-count"
+                      class="secondary-font-color f_15_18_RR"
+                      >2</span
+                    >
+                    <p class="secondary-font-color f_15_18_RR pL5">Selected</p>
+                  </div>
+                </div>
+                <div class="dF">
+                  <div class="search-box pR">
+                    <div class="icon-search"></div>
+                    <input
+                      type="text"
+                      id="functionSearch"
+                      class="search-field"
+                      placeholder="Search Function Names"
+                    />
+                  </div>
+                </div>
+              </div>
+              <table class="with-checkbox" id="tableFunction">
+                <thead>
+                  <tr>
+                    <th class="w5p">
+                      <label class="checkbox-container">
+                        <input type="checkbox" onchange="selectAllRows(this)" />.
+                        <span class="checkmark"></span>
+                      </label>
+                    </th>
+                    <th class="w20p">Function name</th>
+                    <th class="w20p">Function Id</th>
+                    <th class="w23p">Created By</th>
+                    <th class="w15p">Stack</th>
+                    <th class="w15p">Type</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+            <div id="appsailTabB" class="tab" show="false">
+              <div class="tab-body-content">
+                <div id="tabContent">
+                  <div show-content="true">
+                    <h4 class="primary-font-color pB5">AppSail</h4>
+                  </div>
+                  <div class="btn-text" show-content="false">
+                    <div class="lg-btn btn-text pL10 pR10 mL20 cP theme-border-color" onclick="pullAppsail()">
+                      <span class="icon-pull-sm"></span>
+                      <span class="f_15_18_RR theme-font-color pL5">
+                        Pull Selected
+                      </span>
+                    </div>
+                    <span class="splitter"></span>
+                    <span
+                      id="selected-count"
+                      class="secondary-font-color f_15_18_RR"
+                      >2</span
+                    >
+                    <p class="secondary-font-color f_15_18_RR pL5">Selected</p>
+                  </div>
+                </div>
+                <div class="dF">
+                  <div class="search-box pR">
+                    <div class="icon-search"></div>
+                    <input
+                      type="text"
+                      id="appsailSearch"
+                      class="search-field"
+                      placeholder="Search AppSail Names"
+                    />
+                  </div>
+                </div>
+              </div>
+              <table class="without-checkbox" id="tableAppsail">
+                <thead>
+                  <tr>
+                    <!-- <th class="w5p">
+                      <label class="checkbox-container">
+                        <input type="checkbox" onchange="selectAllRows(this)" />.
+                        <span class="checkmark"></span>
+                      </label>
+                    </th> -->
+                    <th class="w20p">AppSail name</th>
+                    <th class="w20p">AppSail Id</th>
+                    <th class="w23p">Created By</th>
+                    <th class="w15p">Stack</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+            <div id="apiTabB" class="tab" show="false">
+              <div class="tab-body-content">
+                <div id="tabContent" class="dF">
+                  <h4 class="primary-font-color pB5">API Gateway</h4>
+                  <span class="enable-badge" style="display: none;">Enabled</span>
+                  <span class="disable-badge" style="display: none;">Disabled</span>
+                </div>
+                <div class="dF">
+                  <div class="search-box pR">
+                    <div class="icon-search"></div>
+                    <input
+                      type="text"
+                      id="apiSearch"
+                      class="search-field"
+                      placeholder="Search API Names"
+                    />
+                  </div>
+                  <div
+                    class="lg-btn btn-text pL10 pR10 mL20 cP theme-border-color"
+                  id="apigPullBtn" onclick="pullAPIG()">
+                    <span class="icon-pull-sm"></span>
+                    <span class="f_15_18_RR theme-font-color pL5"
+                      >Pull all API</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <table class="without-checkbox" id="tableApiGateway">
+                <thead>
+                  <tr>
+                    <th class="w20p">API Name</th>
+                    <th class="w10p">Req Method</th>
+                    <th class="w25p">Req URL</th>
+                    <th class="w15p">Target</th>
+                    <th class="w30p">Target URL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Modal Sections -->
+      <!-- Top Modal -->
+      <div id="reinitPopup" class="ca-pagecenterPop" style="display: none">
+        <div class="modal-section">
+          <div class="center-modal-head">
+            <h2 class="primary-font-color">Re-init</h2>
+          </div>
+          <div class="project-list">
+          </div>
+        </div>
+      </div>
+      <!-- Right Modal -->
+      <!-- TestCornFN Modal -->
+      <div class="right-panel closed" id="fnModal">
+        <div class="modal-section pR">
+          <span
+            class="close-btn icon-close"
+            onclick="closeRightModal(this)"
+          ></span>
+          <div class="right-modal-head">
+            <div>
+              <h2 class="primary-font-color">Function</h2>
+            </div>
+            <div class="dF" onclick="fnModalPull()">
+              <div class="sm-btn btn-text pL10 pR10 cP theme-border-color">
+                <span class="icon-pull-sm"></span>
+                <span class="f_13_15_RR theme-font-color pL5">Pull</span>
+              </div>
+              <!-- <div class="sm-btn btn-text pL5 pR5 cP border-border-color mL16">
+                <span class="icon-more"></span>
+              </div> -->
+            </div>
+          </div>
+          <div class="right-popup-body">
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">Name</div>
+              <div class="w55p f_15_18_RR primary-font-color word-break-all" id="fnName">TestCronFn</div>
+            </div>
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">Id</div>
+              <div class="w55p f_15_18_RR primary-font-color word-break-all" id="fnId">
+                781234560876543
+              </div>
+            </div>
+            <!-- <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">Version</div>
+              <div class="w55p f_15_18_RR primary-font-color word-break-all">V1.2</div>
+            </div> -->
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">Created by</div>
+              <div class="w55p f_15_18_RR primary-font-color word-break-all" id="fnCreatedBy">
+                willaimstone@zohocorp.com
+              </div>
+            </div>
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">Created time</div>
+              <div class="w55p f_15_18_RR primary-font-color word-break-all" id="fnCreatedTime">
+                Jun 29, 2021 10:12 AM
+              </div>
+            </div>
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">Stack</div>
+              <div class="w55p f_15_18_RR primary-font-color word-break-all" id="fnStack">NodeJS 10</div>
+            </div>
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">Type</div>
+              <div class="w55p f_15_18_RR primary-font-color word-break-all" id="fnType">Basic I/O</div>
+            </div>
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">
+                Memory Allocated
+              </div>
+              <div class="w55p f_15_18_RR primary-font-color" id="fnMemory">256 MB</div>
+            </div>
+            <div class="dF mT25">
+              <h4 class="f_15_18_RR secondary-font-color" id="invocationUrl">Invocation url</h4>
+            </div>
+            <div class="preview-url-block">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appsail Modal -->
+      <div class="right-panel closed" id="appsailModal">
+        <div class="modal-section pR">
+          <span
+            class="close-btn icon-close"
+            onclick="closeRightModal(this)"
+          ></span>
+          <div class="right-modal-head">
+            <div>
+              <h2 class="primary-font-color">AppSail</h2>
+            </div>
+            <!-- <div class="dF" onclick="fnModalPull()">
+              <div class="sm-btn btn-text pL10 pR10 cP theme-border-color">
+                <span class="icon-pull-sm"></span>
+                <span class="f_13_15_RR theme-font-color pL5">Pull</span>
+              </div>
+              <div class="sm-btn btn-text pL5 pR5 cP border-border-color mL16">
+                <span class="icon-more"></span>
+              </div>
+            </div> -->
+          </div>
+          <div class="right-popup-body">
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">Name</div>
+              <div class="w55p f_15_18_RR primary-font-color word-break-all" id="appSailName">TestCronFn</div>
+            </div>
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">Id</div>
+              <div class="w55p f_15_18_RR primary-font-color word-break-all" id="appSailId">
+                781234560876543
+              </div>
+            </div>
+            <!-- <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">Version</div>
+              <div class="w55p f_15_18_RR primary-font-color word-break-all">V1.2</div>
+            </div> -->
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">Created by</div>
+              <div class="w55p f_15_18_RR primary-font-color word-break-all" id="appSailCreatedBy">
+                willaimstone@zohocorp.com
+              </div>
+            </div>
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">Created time</div>
+              <div class="w55p f_15_18_RR primary-font-color word-break-all" id="appSailCreatedTime">
+                Jun 29, 2021 10:12 AM
+              </div>
+            </div>
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">Stack</div>
+              <div class="w55p f_15_18_RR primary-font-color word-break-all" id="appSailStack">NodeJS 10</div>
+            </div>
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">Platform</div>
+              <div class="w55p f_15_18_RR primary-font-color word-break-all" id="appSailPlatform">WAR</div>
+            </div>
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">
+                Memory Allocated
+              </div>
+              <div class="w55p f_15_18_RR primary-font-color" id="appSailMemory">256 MB</div>
+            </div>
+            <div class="dF mT25" id="commandLabel">
+              <h4 class="f_15_18_RR secondary-font-color">Startup command</h4>
+            </div>
+            <div class="preview-url-block overflow-scroll" id="command">
+              <!-- startup command block -->
+              <!-- <div class="f_15_18_RR primary-font-color word-break-all">
+                node index.js
+              </div> -->
+            </div>
+            <div class="dF mT25">
+              <h4 class="f_15_18_RR secondary-font-color">Invocation url</h4>
+            </div>
+            <div class="preview-url-block" id="url">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TestApi Modal -->
+      <div class="right-panel closed" id="apiModal">
+        <div class="modal-section pR">
+          <span
+            class="close-btn icon-close"
+            onclick="closeRightModal(this)"
+          ></span>
+          <div class="right-modal-head">
+            <div>
+              <h2 class="primary-font-color">API Gateway</h2>
+            </div>
+            <div class="dF">
+              <!-- <div class="sm-btn btn-text pL10 pR10 cP theme-border-color">
+                <span class="icon-pull-sm"></span>
+                <span class="f_13_15_RR theme-font-color pL5">Pull</span>
+              </div>
+              <div class="sm-btn btn-text pL5 pR5 cP border-border-color mL16">
+                <span class="icon-more"></span>
+              </div> -->
+            </div>
+          </div>
+          <div class="right-popup-body">
+            <div class="dF mT25">
+              <h4 class="primary-font-color">Authentication and Throttling</h4>
+            </div>
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">
+                Authentication
+              </div>
+              <div class="w45p f_15_18_RR primary-font-color word-break-all" id="apigRuleAuth">
+                No authentication
+              </div>
+            </div>
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">
+                General Throttling
+              </div>
+              <div class="w55p f_15_18_RR primary-font-color word-break-all" id="apigRuleGenThrottling">
+                Not Configured
+              </div>
+            </div>
+            <div class="dF mT25">
+              <div class="w45p f_15_18_RR secondary-font-color">
+                IP Throttling
+              </div>
+              <div class="w55p f_15_18_RR primary-font-color word-break-all" id="apigRuleIpThrottling">
+                Not Configured
+              </div>
+            </div>
+            <div class="dF mT25">
+              <h4 class="primary-font-color">Preview URL</h4>
+            </div>
+            <div class="preview-url-block">
+              <div class="f_15_18_RR primary-font-color word-break-all" id="apigRulePrevUrl">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manage Token Modal -->
+      <div class="right-panel closed" id="manageTokenModal">
+        <div class="modal-section pR">
+          <span
+            class="close-btn icon-close"
+            onclick="closeRightModal(this)"
+          ></span>
+          <div class="right-modal-head">
+            <div class="dF w100p align-items-center justify-content-sb">
+              <div>
+                <h2 class="primary-font-color">Manage Token</h2>
+              </div>
+              <div class="theme-btn" onclick="generateToken()">
+                <span class="f_15_18_RR" style="color: #FFFFFF">Create Token</span>
+              </div>
+            </div>
+          </div>
+          <div class="manage-token-list">
+            <div class="project-list">
+            </div>
+          </div>
+        </div>
+      </div>
+    <div class="dN freeze-layer" id="freezeLayer"></div>
+    </section>
+    
+
+    <!--JavaScript-->
+    <script src="{{security_js}}"></script>
+    <script src="{{popper_js}}"></script>
+    <script src="{{tippy_js}}"></script>
+    <script src="{{select_js}}"></script>
+    <script src="{{main_js}}"></script>
+    <script src="{{configs_js}}"></script>
+  </body>
+</html>

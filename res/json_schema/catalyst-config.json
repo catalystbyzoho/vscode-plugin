@@ -1,0 +1,133 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "zcatalyst-cli.schema.catalyst-config.json",
+    "title": "Catalyst config JSON",
+    "description": "Catalyst functions configuration file for ZCatalyst-CLI",
+    "type": "object",
+    "properties": {
+        "deployment": {
+            "description": "Contains the basic deployment configuration of the function",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "Name of the function",
+                    "type": "string",
+                    "pattern": "(?!^\\d+$)^(\\w|-)+$"
+                },
+                "stack": {
+                    "description": "Stack of the function",
+                    "type": "string",
+                    "enum": ["java8", "java11", "java17","node12", "node14", "node16", "node18", "node20", "python_3_9"]
+                },
+                "type": {
+                    "description": "Type of the function",
+                    "type": "string",
+                    "enum": ["basicio", "advancedio", "cron", "event", "integration", "job", "browser_logic"]
+                },
+                "env_variables": {
+                    "description": "Environment variables to be used in the function",
+                    "type": "object"
+                }
+            }, 
+            "if": { "properties": { "type": { "const": "integration"}}},
+            "then": {
+                "properties": {
+                    "integration_config": {
+                        "description": "Additional configuration for integration functions",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "service": {
+                                    "description": "Name of the integration service that uses this function",
+                                    "type": "string",
+                                    "enum": ["ZohoCliq", "Convokraft"]
+                                }
+                            },
+                            "allOf": [
+                                {
+                                    "if": { "properties": { "service": { "const": "ZohoCliq" }}},
+                                    "then": {
+                                        "properties": {
+                                            "handlers": {
+                                                "description": "Handlers to handle the Cliq integration requests",
+                                                "type": "object",
+                                                "properties": {
+                                                    "bot_handler": {
+                                                        "description": "path to the file that handles bot requests",
+                                                        "type": "string"
+                                                    },
+                                                    "command_handler": {
+                                                        "description": "path to the file that handles command requests",
+                                                        "type": "string"
+                                                    },
+                                                    "messageaction_handler": {
+                                                        "description": "path to the file that handles message action requests",
+                                                        "type": "string"
+                                                    },
+                                                    "widget_handler": {
+                                                        "description": "path to the file that handles widget requests",
+                                                        "type": "string"
+                                                    },
+                                                    "function_handler": {
+                                                        "description": "path to the file that handles function requests",
+                                                        "type": "string"
+                                                    },
+                                                    "extension_handler": {
+                                                        "description": "path to the file that handles extension actions like installation",
+                                                        "type": "string"
+                                                    },
+                                                    "link_preview_handler": {
+                                                        "description": "path to the file that handles link preview requests",
+                                                        "type": "string"
+                                                    },
+                                                    "installation_handler": {
+                                                        "description": "path to the file that handles installation requests. This configuration is deprecated and cannot be used with latest integration SDKs. Please use `extension_handler` instead.",
+                                                        "type": "string",
+                                                        "deprecated": true
+                                                    },
+                                                    "installation_validator": {
+                                                        "description": "path to the file that handles installation validation requests. This configuration is deprecated and cannot be used with latest integration SDKs. Please use `extension_handler` instead.",
+                                                        "type": "string",
+                                                        "deprecated": true
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ],
+                            "required": [
+                                "service"
+                            ]
+                        },
+                        "minItems": 1
+                    }
+                },
+                "required": [
+                    "integration_config"
+                ]
+            },
+            "required": [
+                "name",
+                "stack",
+                "type"
+            ]
+        },
+        "execution": {
+            "description": "Contains the execution configurations",
+            "type": "object",
+            "properties": {
+                "main": {
+                    "description": "Path to the main file of the function",
+                    "type": "string"
+                }
+            },
+            "required": [ "main" ]
+        }
+    },
+    "required": [
+        "deployment",
+        "execution"
+    ]
+}

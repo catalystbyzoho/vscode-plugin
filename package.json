@@ -1,0 +1,590 @@
+{
+	"name": "vs-catalyst",
+	"displayName": "Catalyst Tools",
+	"publisher": "ZohoCorporation",
+	"description": "Official Zoho Catalyst extension for Visual Studio Code",
+	"homepage": "https://catalyst.zoho.com",
+	"icon": "res/icons/catalyst_logo.png",
+	"license": "Apache-2.0",
+	"version": "1.0.0",
+	"engines": {
+		"vscode": "^1.89.0",
+		"node": ">=16.0.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"keywords": [
+		"Catalyst",
+		"Catalyst by Zoho",
+		"Serverless",
+		"Microservice",
+		"Cloud Hosting"
+	],
+	"activationEvents": [
+		"workspaceContains:catalyst.json",
+		"workspaceContains:.catalystrc"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"colors": [
+			{
+				"id": "zcatalyst.treeView.serve",
+				"description": "serving tree item color",
+				"defaults": {
+					"dark": "#89d185",
+					"light": "#89d185",
+					"highContrast": "#89d185"
+				}
+			}
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "zcatalyst_container",
+					"title": "Catalyst",
+					"icon": "res/icons/catalyst_logo.svg"
+				}
+			]
+		},
+		"views": {
+			"zcatalyst_container": [
+				{
+					"id": "zcatalyst.configs",
+					"name": "Catalyst Configs",
+					"icon": "res/icons/catalyst_logo.svg"
+				},
+				{
+					"id": "zcatalyst.http_functions",
+					"name": "HTTP Functions",
+					"icon": "res/icons/catalyst_logo.svg"
+				},
+				{
+					"id": "zcatalyst.non_http_functions",
+					"name": "Non HTTP Functions",
+					"icon": "res/icons/catalyst_logo.svg"
+				},
+				{
+					"id": "zcatalyst.appSail",
+					"name": "AppSail",
+					"icon": "res/icons/catalyst_logo.svg"
+				},
+				{
+					"id": "zcatalyst.client",
+					"name": "Client",
+					"icon": "res/icons/catalyst_logo.svg"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "zcatalyst.view.httpFunctions.refreshTree",
+				"title": "Refresh Http Functions",
+				"icon": "$(refresh)",
+				"shortTitle": "Refresh"
+			},
+			{
+				"command": "zcatalyst.view.nonHttpFunctions.refreshTree",
+				"title": "Refresh Non-Http Functions",
+				"icon": "$(refresh)",
+				"shortTitle": "Refresh"
+			},
+			{
+				"command": "zcatalyst.view.appSail.refreshTree",
+				"title": "Refresh AppSail",
+				"icon": "$(refresh)",
+				"shortTitle": "Refresh"
+			},
+			{
+				"command": "zcatalyst.view.client.refreshTree",
+				"title": "Refresh Client",
+				"icon": "$(refresh)",
+				"shortTitle": "Refresh"
+			},
+			{
+				"command": "zcatalyst.view.config.refreshTree",
+				"title": "Refresh Catalyst Configs",
+				"icon": "$(refresh)",
+				"shortTitle": "Refresh"
+			},
+			{
+				"command": "zcatalyst.view.open",
+				"title": "Open file",
+				"icon": "$(go-to-file)",
+				"shortTitle": "Open"
+			},
+			{
+				"command": "zcatalyst.init.project.force",
+				"title": "Catalyst: Force initialize a Catalyst project",
+				"shortTitle": "force init"
+			},
+			{
+				"command": "zcatalyst.init.http_function",
+				"title": "Add Http Function",
+				"icon": "$(add)",
+				"shortTitle": "Add Function"
+			},
+			{
+				"command": "zcatalyst.init.non_http_function",
+				"title": "Add Non-Http Function",
+				"icon": "$(add)",
+				"shortTitle": "Add Function"
+			},
+			{
+				"command": "zcatalyst.init.appSail",
+				"title": "Add AppSail",
+				"icon": "$(add)",
+				"shortTitle": "Add AppSail"
+			},
+			{
+				"command": "zcatalyst.init.client",
+				"title": "Setup Catalyst web client",
+				"icon": "$(add)",
+				"shortTitle": "Add client"
+			},
+			{
+				"command": "zcatalyst.auth.login",
+				"title": "Catalyst: Login to Catalyst",
+				"icon": "$(log-in)",
+				"shortTitle": "Login"
+			},
+			{
+				"command": "zcatalyst.auth.logout",
+				"title": "Catalyst: Logout of Catalyst",
+				"icon": "$(log-out)",
+				"shortTitle": "Logout"
+			},
+			{
+				"command": "zcatalyst.auth.whoami",
+				"title": "Catalyst: Whoami",
+				"shortTitle": "Whoami"
+			},
+			{
+				"command": "zcatalyst.logs.verbose.enable",
+				"title": "Catalyst: Enable verbose",
+				"shortTitle": "Enable verbose"
+			},
+			{
+				"command": "zcatalyst.logs.verbose.disable",
+				"title": "Catalyst: Disable verbose",
+				"shortTitle": "Disable verbose"
+			},
+			{
+				"command": "zcatalyst.serve.kill",
+				"title": "Catalyst: Kill Catalyst server",
+				"shortTitle": "Kill server",
+				"icon": {
+					"light": "res/icons/stop_circle_dark.svg",
+					"dark": "res/icons/stop_circle_dark.svg"
+				}
+			},
+			{
+				"command": "zcatalyst.serve.copy-url",
+				"title": "Copy serve url",
+				"shortTitle": "Copy url",
+				"icon": "$(zcatalyst-copy)"
+			}
+		],
+		"viewsWelcome": [
+			{
+				"view": "zcatalyst.http_functions",
+				"contents": "No Catalyst HTTP Functions found in this project directory.\n[Create new HTTP Functions](command:zcatalyst.init.http_function)",
+				"when": "zcatalyst.viewWelcome.view == 'all'",
+				"enablement": "zcatalyst.viewWelcome.enable == true && zcatalyst.viewWelcome.httpFunctions.enable == true"
+			},
+			{
+				"view": "zcatalyst.non_http_functions",
+				"contents": "No Catalyst Non HTTP Functions found in this project directory.\n[Create new Non-HTTP Functions](command:zcatalyst.init.non_http_function)",
+				"when": "zcatalyst.viewWelcome.view == 'all'",
+				"enablement": "zcatalyst.viewWelcome.enable == true && zcatalyst.viewWelcome.nonHttpFunctions.enable == true"
+			},
+			{
+				"view": "zcatalyst.appSail",
+				"contents": "No Catalyst AppSail found in this project directory.\n[Create new AppSail](command:zcatalyst.init.appSail)",
+				"when": "zcatalyst.viewWelcome.view == 'all'",
+				"enablement": "zcatalyst.viewWelcome.enable == true && zcatalyst.viewWelcome.appSail.enable == true"
+			},
+			{
+				"view": "zcatalyst.client",
+				"contents": "No Catalyst Clients found in this project directory.\n[Create new Client](command:zcatalyst.init.client)",
+				"when": "zcatalyst.viewWelcome.view == 'all'",
+				"enablement": "zcatalyst.viewWelcome.enable == true && zcatalyst.viewWelcome.client.enable == true"
+			},
+			{
+				"view": "zcatalyst.configs",
+				"contents": "Could not detect any Config files, Please initialize the Catalyst project.\n[Initialize](command:zcatalyst.init.init)",
+				"when": "zcatalyst.viewWelcome.view == 'all' || zcatalyst.viewWelcome.view == 'init'",
+				"enablement": "zcatalyst.viewWelcome.enable == true"
+			},
+			{
+				"view": "zcatalyst.configs",
+				"contents": "Unable to find any workspace folders. Please open a folder to continue.\n[Open Folder](command:vscode.openFolder)",
+				"when": "zcatalyst.viewWelcome.view == 'NoFolder'"
+			},
+			{
+				"view": "zcatalyst.configs",
+				"contents": "Please Login to your Catalyst account to continue.\n[Login](command:zcatalyst.auth.login)",
+				"when": "zcatalyst.viewWelcome.view == 'login'",
+				"enablement": "zcatalyst.viewWelcome.enable == true"
+			},
+			{
+				"view": "zcatalyst.configs",
+				"contents": "NodeJS not installed. \nPlease [Install NodeJS](https://nodejs.org/en/download/) to continue.",
+				"when": "zcatalyst.viewWelcome.view == 'NoNode'",
+				"enablement": "zcatalyst.viewWelcome.enable == true"
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "zcatalyst.init.http_function",
+					"group": "navigation",
+					"when": "view == zcatalyst.http_functions && zcatalyst.serverKill != true && zcatalyst.viewWelcome.view == 'all'"
+				},
+				{
+					"command": "zcatalyst.view.httpFunctions.refreshTree",
+					"group": "navigation",
+					"when": "view == zcatalyst.http_functions && zcatalyst.serverKill != true && zcatalyst.viewWelcome.view == 'all'"
+				},
+				{
+					"command": "zcatalyst.init.non_http_function",
+					"group": "navigation",
+					"when": "view == zcatalyst.non_http_functions && zcatalyst.serverKill != true && zcatalyst.viewWelcome.view == 'all'"
+				},
+				{
+					"command": "zcatalyst.view.nonHttpFunctions.refreshTree",
+					"group": "navigation",
+					"when": "view == zcatalyst.non_http_functions && zcatalyst.serverKill != true && zcatalyst.viewWelcome.view == 'all'"
+				},
+				{
+					"command": "zcatalyst.init.appSail",
+					"group": "navigation",
+					"when": "view == zcatalyst.appSail && zcatalyst.serverKill != true && zcatalyst.viewWelcome.view == 'all'"
+				},
+				{
+					"command": "zcatalyst.view.appSail.refreshTree",
+					"group": "navigation",
+					"when": "view == zcatalyst.appSail && zcatalyst.serverKill != true && zcatalyst.viewWelcome.view == 'all'"
+				},
+				{
+					"command": "zcatalyst.init.client",
+					"group": "navigation@1",
+					"when": "view == zcatalyst.client && zcatalyst.serverKill != true && zcatalyst.viewWelcome.view == 'all'"
+				},
+				{
+					"command": "zcatalyst.view.client.refreshTree",
+					"group": "navigation@2",
+					"when": "view == zcatalyst.client && zcatalyst.serverKill != true && zcatalyst.viewWelcome.view == 'all'"
+				},
+				{
+					"command": "zcatalyst.view.config.refreshTree",
+					"group": "navigation",
+					"when": "view == zcatalyst.configs && zcatalyst.serverKill != true && zcatalyst.viewWelcome.view == 'all'"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "zcatalyst.view.open",
+					"when": "viewItem == clientTreeItem || viewItem == appSailTreeItem || viewItem == functionsTreeItem || viewItem == apigTreeItem || viewItem == configTreeItem",
+					"group": "inline"
+				},
+				{
+					"command": "zcatalyst.serve.kill",
+					"when": "viewItem == currentServe || viewItem == currentServeAll",
+					"group": "inline"
+				},
+				{
+					"command": "zcatalyst.serve.copy-url",
+					"when": "(view == zcatalyst.http_functions || view == zcatalyst.client || view == zcatalyst.appSail) && viewItem == currentServe",
+					"group": "inline"
+				}
+			],
+			"commandPalette": [
+				{
+					"command": "zcatalyst.serve.kill",
+					"when": "zcatalyst.serverKill == true"
+				},
+				{
+					"command": "zcatalyst.serve.copy-url",
+					"when": "zcatalyst.serverKill == true"
+				},
+				{
+					"command": "zcatalyst.view.httpFunctions.refreshTree",
+					"when": "false"
+				},
+				{
+					"command": "zcatalyst.view.nonHttpFunctions.refreshTree",
+					"when": "false"
+				},
+				{
+					"command": "zcatalyst.view.client.refreshTree",
+					"when": "false"
+				},
+				{
+					"command": "zcatalyst.view.config.refreshTree",
+					"when": "false"
+				},
+				{
+					"command": "zcatalyst.view.open",
+					"when": "false"
+				},
+				{
+					"command": "zcatalyst.auth.login",
+					"when": "zcatalyst.init == true"
+				},
+				{
+					"command": "zcatalyst.auth.logout",
+					"when": "zcatalyst.init == true"
+				},
+				{
+					"command": "zcatalyst.logs.verbose.enable",
+					"when": "zcatalyst.init == true"
+				},
+				{
+					"command": "zcatalyst.logs.verbose.disable",
+					"when": "zcatalyst.init == true"
+				}
+			]
+		},
+		"jsonValidation": [
+			{
+				"fileMatch": "catalyst.json",
+				"url": "./res/json_schema/catalyst.json"
+			},
+			{
+				"fileMatch": "catalyst-config.json",
+				"url": "./res/json_schema/catalyst-config.json"
+			},
+			{
+				"fileMatch": "client-package.json",
+				"url": "./res/json_schema/client-package.json"
+			},
+			{
+				"fileMatch": "app-config.json",
+				"url": "./res/json_schema/app-config.json"
+			}
+		],
+		"configuration": {
+			"title": "Catalyst",
+			"properties": {
+				"zcatalyst.credentialsPath": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"maxItems": 1,
+					"scope": "machine",
+					"markdownDescription": "The path where the Authentication credentials are stored. Please note changing this value will have its effect across the machine"
+				},
+				"zcatalyst.chromeExecutable": {
+					"type": "string",
+					"description": "Specify the chrome executable to be used by the Browser Logic function",
+					"scope": "window"
+				},
+				"zcatalyst.chromeDriverExecutable": {
+					"type": "string",
+					"description": "Specify the Chrome driver executable to be used by the Browser Logic function",
+					"scope": "window"
+				},
+				"zcatalyst.python_3_9": {
+					"type": "string",
+					"description": "Specify the Python 3.9 executable to be used for serving the Python functions",
+					"scope": "window"
+				},
+				"zcatalyst.java8": {
+					"type": "string",
+					"description": "Specify the Java 8 JDK binary to be used for serving the Java8 functions",
+					"scope": "window"
+				},
+				"zcatalyst.java11": {
+					"type": "string",
+					"description": "Specify the Java 11 JDK binary to be used for serving the Java11 functions",
+					"scope": "window"
+				},
+				"zcatalyst.java17": {
+					"type": "string",
+					"description": "Specify the Java 17 JDK binary to be used for serving the Java17 functions",
+					"scope": "window"
+				},
+				"zcatalyst.node12": {
+					"type": "string",
+					"description": "Specify the NodeJS 12 to be used for serving the NodeJS 12 functions",
+					"scope": "window"
+				},
+				"zcatalyst.node14": {
+					"type": "string",
+					"description": "Specify the NodeJS 14 binary to be used for serving the NodeJS 14 functions",
+					"scope": "window"
+				},
+				"zcatalyst.node16": {
+					"type": "string",
+					"description": "Specify the NodeJS 16 to be used for serving the NodeJS 16 functions",
+					"scope": "window"
+				},
+				"zcatalyst.node18": {
+					"type": "string",
+					"description": "Specify the NodeJS 18 to be used for serving the NodeJS 18 functions",
+					"scope": "window"
+				},
+				"zcatalyst.node20": {
+					"type": "string",
+					"description": "Specify the NodeJS 20 to be used for serving the NodeJS 20 functions",
+					"scope": "window"
+				}
+			}
+		},
+		"icons": {
+			"zcatalyst-logo": {
+				"description": "Catalyst Logo",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\E914"
+				}
+			},
+			"zcatalyst-aio": {
+				"description": "Catalyst AdvancedIO function",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\E901"
+				}
+			},
+			"zcatalyst-bio": {
+				"description": "Catalyst BasicIO function",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\E904"
+				}
+			},
+			"zcatalyst-event": {
+				"description": "Catalyst Event function",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\E909"
+				}
+			},
+			"zcatalyst-cron": {
+				"description": "Catalyst Cron function",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\E902"
+				}
+			},
+			"zcatalyst-job-scheduling": {
+				"description": "Catalyst Job function",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\e919"
+				}
+			},
+			"zcatalyst-integ": {
+				"description": "Catalyst Integration function",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\E90B"
+				}
+			},
+			"zcatalyst-browserlogic": {
+				"description": "Catalyst Browser Logic function",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\E900"
+				}
+			},
+			"zcatalyst-functions": {
+				"description": "Catalyst Integration function",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\E90A"
+				}
+			},
+			"zcatalyst-appsail": {
+				"description": "Catalyst AppSail",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\E912"
+				}
+			},
+			"zcatalyst-client": {
+				"description": "Catalyst Web Client",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\E907"
+				}
+			},
+			"zcatalyst-apig": {
+				"description": "Catalyst API Gateway",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\E903"
+				}
+			},
+			"zcatalyst-serve": {
+				"description": "Catalyst Local Serve",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\E906"
+				}
+			},
+			"zcatalyst-debug": {
+				"description": "Catalyst Local debug",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\E917"
+				}
+			},
+			"zcatalyst-deploy": {
+				"description": "Catalyst Integration function",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\E905"
+				}
+			},
+			"zcatalyst-delete": {
+				"description": "Catalyst Integration function",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\E908"
+				}
+			},
+			"zcatalyst-copy": {
+				"description": "Icon for copy",
+				"default": {
+					"fontPath": "res/config_view/vendor/fonts/font-image/icomoon.woff",
+					"fontCharacter": "\\E915"
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile && npm run lint",
+		"lint": "eslint src --ext ts",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/fs-extra": "^9.0.13",
+		"@types/glob": "^7.1.4",
+		"@types/mocha": "^9.0.0",
+		"@types/node": "^20.14.9",
+		"@types/request": "^2.48.8",
+		"@types/vscode": "^1.66.0",
+		"@typescript-eslint/eslint-plugin": "^5.1.0",
+		"@typescript-eslint/parser": "^5.1.0",
+		"@vscode/test-electron": "^1.6.2",
+		"@vscode/vsce": "^2.32.0",
+		"@zoho/eslint-plugin-webperf": "^1.0.1",
+		"@zoho/eslint-plugin-zstandard": "^1.0.1",
+		"eslint": "^8.1.0",
+		"eslint-config-prettier": "^8.5.0",
+		"eslint-plugin-prettier": "^4.0.0",
+		"glob": "^7.1.7",
+		"mocha": "^9.1.3",
+		"typescript": "^4.9.5"
+	},
+	"dependencies": {
+		"portfinder": "^1.0.32",
+		"zcatalyst-cli": "^1.23.0-zc8"
+	}
+}
