@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isEmpty, readJsonFile } from '../utils.js';
+import { isEmpty, readJsonFile, resolveSafePath } from '../utils.js';
 import { join } from 'path';
 import type {
 	IAppSailDetail,
@@ -183,7 +183,7 @@ class AppSailTreeProvider implements vscode.TreeDataProvider<AppSailTreeItem | A
 
 		const filledAppSail = await setStatusBarMessage(
 			`$(sync~spin) Refreshing AppSail view...`,
-			fillTreeProviderAppSails(catalystJson?.appsail)
+			fillTreeProviderAppSails(this.catalystRoot, catalystJson?.appsail)
 		);
 
 		this._appSails = filledAppSail.map((sail) => {
@@ -221,7 +221,7 @@ export class AppSailTree extends AppSailTreeProvider {
 			return new AppSailTree(catalystRoot, []);
 		}
 		const appSailTreeObj = new AppSailTree(catalystRoot, appSailConfig);
-		const filledAppSails = await fillTreeProviderAppSails();
+		const filledAppSails = await fillTreeProviderAppSails(catalystRoot, appSailConfig);
 		appSailTreeObj.items.push(...filledAppSails);
 
 		return appSailTreeObj;
@@ -236,6 +236,7 @@ function constructAppDetails(
 }
 
 async function fillTreeProviderAppSails(
+	catalystRoot: string,
 	appSailTargets: Array<ICatalystJsonAppSail> = []
 ): Promise<Array<AppSailTreeItem>> {
 	const filledSails: Array<AppSailTreeItem> = [];
@@ -251,7 +252,14 @@ async function fillTreeProviderAppSails(
 
 	await Promise.all(
 		appSailTargets.map(async (sailTarget) => {
-			const appSailSource = sailTarget.source;
+			let appSailSource: string;
+			try {
+				appSailSource = await resolveSafePath(catalystRoot, sailTarget.source);
+			} catch (err) {
+				// eslint-disable-next-line no-console
+				console.error('Invalid AppSail source path: ' + sailTarget.source, err);
+				return;
+			}
 			const appConfig = await readJsonFile<ICatalystAppConfigJson>(
 				join(appSailSource, FILENAMES.APP_CONFIG_JSON)
 			);
@@ -260,6 +268,11 @@ async function fillTreeProviderAppSails(
 				console.error('Unable to get the config File for AppSail: ' + sailTarget);
 				return;
 			}
+			// Normalize to the resolved, containment-checked absolute path so
+			// downstream consumers (e.g. `appConfigPath`, `view.ts`) operate
+			// on the same validated location rather than the raw workspace-
+			// configured value.
+			sailTarget.source = appSailSource;
 			const appSailDetail = constructAppDetails(sailTarget, appConfig);
 
 			filledSails.push(new AppSailTreeItem(appSailDetail));

@@ -2,7 +2,7 @@ import { window, EventEmitter } from 'vscode';
 import { catalystExec, deployEvent, getCatalystRoot, ICatalystResult, log } from '../catalyst';
 import { reloadView } from '../commands/config_view';
 import { setStatusBarMessage } from '../status-bar';
-import { promiseWrapper } from '../utils';
+import { promiseWrapper, parseCliLogChunk } from '../utils';
 import { LogTerminal } from './terminals.js';
 
 class DeployQueue {
@@ -103,11 +103,8 @@ export class DeployTerminal {
 		}
 		const terminal = await LogTerminal.createTerminal('deploy');
 		const writeToTerminal = (chunk: Buffer) => {
-			const logObj = JSON.parse(chunk.toString()) as {
-				data: string;
-				command: string;
-			};
-			if (logObj.command === 'deploy' && DeployQueue.deploying) {
+			const logObj = parseCliLogChunk(chunk);
+			if (logObj && logObj.command === 'deploy' && DeployQueue.deploying) {
 				terminal?.write(logObj.data);
 			}
 		};

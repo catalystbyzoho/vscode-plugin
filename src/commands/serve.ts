@@ -1,4 +1,3 @@
-import { join, resolve } from 'path';
 import { commands, Disposable, env, extensions, Uri, window } from 'vscode';
 import {
 	getCatalystRoot,
@@ -14,7 +13,7 @@ import { ServeTerminal } from '../terminal/serve.js';
 import { ClientServe, ClientTreeItem } from '../tree_view/client';
 import { ApigTreeItem, ServeAll as ServeTreeItem } from '../tree_view/configs';
 import { FunctionsDebug, FunctionsServe, FunctionsTreeItem } from '../tree_view/functions';
-import { readJsonFile, setContext } from '../utils';
+import { readJsonFile, resolveSafePath, setContext } from '../utils';
 import { ICatalystFnConfigJson, ICatalystJson, ICatalystJsonFunctions } from '../util_types/config';
 import { registerCommands } from './utils.js';
 import { AppSailServe, AppSailTreeItem } from '../tree_view/appsail';
@@ -49,15 +48,26 @@ function serveComponentsTransformer(
 
 async function getFnTargets(functions: ICatalystJsonFunctions, catalystRoot: string) {
 	const fnTargets = functions.targets;
-	const fnSource = join(catalystRoot, functions.source || 'functions');
 	const targetObjects = {
 		httpFns: [] as Array<string>,
 		nonHttpFns: [] as Array<string>
 	};
+	let fnSource: string;
+	try {
+		fnSource = await resolveSafePath(catalystRoot, functions.source || 'functions');
+	} catch (err) {
+		// eslint-disable-next-line no-console
+		console.error('Invalid functions source path: ' + functions.source, err);
+		return targetObjects;
+	}
 	await Promise.all(
 		fnTargets.map(async (fn) => {
 			try {
-				const configPath = join(fnSource, fn, FILENAMES.CATALYST_CONFIG_JSON);
+				const configPath = await resolveSafePath(
+					fnSource,
+					fn,
+					FILENAMES.CATALYST_CONFIG_JSON
+				);
 				const config = await readJsonFile<ICatalystFnConfigJson>(configPath);
 
 				if (config) {
@@ -377,15 +387,23 @@ async function serveFunction(fnServeItem: FunctionsServe | FunctionsDebug, debug
 		return;
 	}
 
-	const inputsJson = await readJsonFile<Record<string, unknown>>(
-		resolve(
-			fnServeItem.fnDetail.source,
-			typeof fnServeItem.fnDetail.test_inputs === 'string'
-				? fnServeItem.fnDetail.test_inputs
-				: 'catalyst-inputs.json'
-		),
-		true
-	).catch((err) => err);
+	const inputsPath = await resolveSafePath(
+		fnServeItem.fnDetail.source,
+		typeof fnServeItem.fnDetail.test_inputs === 'string'
+			? fnServeItem.fnDetail.test_inputs
+			: 'catalyst-inputs.json'
+	).catch((err) => err as Error);
+
+	if (inputsPath instanceof Error) {
+		window.showErrorMessage(
+			`Unable to Execute the function. Reason: Invalid test_inputs path`
+		);
+		return;
+	}
+
+	const inputsJson = await readJsonFile<Record<string, unknown>>(inputsPath, true).catch(
+		(err) => err
+	);
 
 	if (inputsJson instanceof Error) {
 		window.showErrorMessage(
@@ -498,5 +516,5 @@ export default function registerServeCommands(): Array<Disposable> {
 		[cmdPrefix + 'kill', killServer],
 		[cmdPrefix + 'copy-url', copyUrl]
 	];
-	return registerCommands(serveCommands, { auth: true });
+	return registerCommands(serveCommands, { auth: true, trusted: true });
 }

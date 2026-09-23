@@ -1,9 +1,8 @@
-import { join } from 'path';
 import { window } from 'vscode';
 import { catalystExec, getCatalystRoot, ICatalystResult } from '../../catalyst';
 import Inputs, { TOutput } from '../../inputs';
 import { setStatusBarMessage } from '../../status-bar';
-import { refreshTreeView, setContext } from '../../utils';
+import { refreshTreeView, resolveSafePath, setContext } from '../../utils';
 import { ClientDetails, overwrite } from './utils';
 import { ClientTreeItem } from '../../tree_view/client';
 
@@ -28,11 +27,12 @@ function initClient(): Inputs {
 		if (!Array.isArray(prev)) {
 			throw new Error('Unknown client type');
 		}
-		const clientNameValidate = async (name: string, folderName: string, path: string) => {
+		const clientNameValidate = async (name: string, folderName: string, relativePath: string) => {
 			if (!name.match(/^[a-zA-Z0-9_-]*$/g)) {
 				return 'Invalid name for the Web client. Should contain only alphanumeric, underscore and hyphen characters.';
 			}
-			return overwrite(folderName, path);
+			const path = await resolveSafePath(catalystRoot, relativePath);
+			return overwrite(catalystRoot, folderName, path);
 		};
 		switch (prev[0]) {
 			case 'ANGULAR': {
@@ -45,7 +45,7 @@ function initClient(): Inputs {
 						{
 							defaultVal: 'angular-app',
 							validate: (val = 'client') =>
-								clientNameValidate(val, 'client', join(catalystRoot, 'client'))
+								clientNameValidate(val, 'client', 'client')
 						}
 					)
 				);
@@ -93,7 +93,7 @@ function initClient(): Inputs {
 						{
 							defaultVal: 'react-app',
 							validate: (val: string) =>
-								clientNameValidate(val, val, join(catalystRoot, val))
+								clientNameValidate(val, val, val)
 						}
 					)
 				);
@@ -109,7 +109,7 @@ function initClient(): Inputs {
 						defaultVal: 'sample-app',
 						prompt: 'A directory client will be created with a webapp pre-configured.',
 						validate: (val) =>
-							clientNameValidate(val, 'client', join(catalystRoot, 'client'))
+							clientNameValidate(val, 'client', 'client')
 					}
 				);
 			}

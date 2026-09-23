@@ -83,7 +83,7 @@ export async function openView() {
 		}
 
 		if (data.action && panel) {
-			actionsHandler(panel, data.action as { name: string; data: unknown });
+			await actionsHandler(panel, data.action as { name: string; data: unknown });
 		}
 	});
 
@@ -216,5 +216,5 @@ export function registerConfigCommand(): Array<Disposable> {
 		[cmdPrefix, openView],
 		[cmdPrefix + '.reload', reloadView]
 	];
-	return registerCommands(configViewCommands);
+	return registerCommands(configViewCommands, { trusted: true });
 }

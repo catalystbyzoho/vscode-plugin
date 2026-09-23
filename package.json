@@ -11,6 +11,25 @@
 		"vscode": "^1.89.0",
 		"node": ">=16.0.0"
 	},
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": "limited",
+			"description": "Serving/deploying a project, workspace lifecycle scripts, plugins, and workspace-configured runtime executable paths require a trusted workspace.",
+			"restrictedConfigurations": [
+				"zcatalyst.python_3_9",
+				"zcatalyst.java8",
+				"zcatalyst.java11",
+				"zcatalyst.java17",
+				"zcatalyst.node12",
+				"zcatalyst.node14",
+				"zcatalyst.node16",
+				"zcatalyst.node18",
+				"zcatalyst.node20",
+				"zcatalyst.chromeExecutable",
+				"zcatalyst.chromeDriverExecutable"
+			]
+		}
+	},
 	"categories": [
 		"Other"
 	],
@@ -572,19 +591,17 @@
 		"@types/vscode": "^1.66.0",
 		"@typescript-eslint/eslint-plugin": "^5.1.0",
 		"@typescript-eslint/parser": "^5.1.0",
-		"@vscode/test-electron": "^1.6.2",
-		"@vscode/vsce": "^2.32.0",
-		"@zoho/eslint-plugin-webperf": "^1.0.1",
-		"@zoho/eslint-plugin-zstandard": "^1.0.1",
+		"@vscode/test-electron": "^3.1.0",
+		"@vscode/vsce": "^3.9.2",
 		"eslint": "^8.1.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-prettier": "^4.0.0",
 		"glob": "^7.1.7",
-		"mocha": "^9.1.3",
+		"mocha": "^12.0.0",
 		"typescript": "^4.9.5"
 	},
 	"dependencies": {
 		"portfinder": "^1.0.32",
-		"zcatalyst-cli": "^1.23.0-zc8"
+		"zcatalyst-cli": "^1.27.0"
 	}
 }

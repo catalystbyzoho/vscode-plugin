@@ -3,7 +3,7 @@ import { join } from 'path';
 import { debug as vsDebug, DebugConfiguration, Uri, window, workspace } from 'vscode';
 import { catalystExec, getCatalystRoot, serverEvent, ICatalystResult, log } from '../catalyst';
 import { setStatusBarMessage } from '../status-bar';
-import { promiseWrapper, timeOut, WrappedPromise } from '../utils';
+import { parseCliLogChunk, promiseWrapper, timeOut, WrappedPromise } from '../utils';
 import { IFnDetail } from '../util_types/config';
 import { LogTerminal } from './terminals';
 import { getPortPromise } from 'portfinder';
@@ -60,11 +60,8 @@ export class ServeTerminal {
 		}
 		let stopEmitted = false;
 		const writeToTerminal = (chunk: Buffer) => {
-			const logObj = JSON.parse(chunk.toString()) as {
-				data: string;
-				command: string;
-			};
-			if (logObj.command === this.command) {
+			const logObj = parseCliLogChunk(chunk);
+			if (logObj && logObj.command === this.command) {
 				this.terminal?.write(logObj.data);
 			}
 		};

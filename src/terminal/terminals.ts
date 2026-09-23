@@ -1,12 +1,13 @@
 import { createConnection, Socket } from 'net';
 import { join } from 'path';
+import { randomBytes } from 'crypto';
 import { Terminal as vsTerminal, TerminalLocation, ThemeIcon, window, EventEmitter } from 'vscode';
 import { getCatalystRoot, ICatalystResult } from '../catalyst';
 
-import { timeOut, WrappedPromise } from '../utils';
+import { getTrustedNodeExecutable, timeOut, WrappedPromise } from '../utils';
 import { getPortPromise } from 'portfinder';
 
-type Terminal = vsTerminal & { port?: number };
+type Terminal = vsTerminal & { port?: number; authToken?: string };
 type TLogTerminals = 'serve' | 'deploy' | 'token' | 'pull';
 
 class TerminalFactory {
@@ -23,9 +24,11 @@ class TerminalFactory {
 			name: `Catalyst ${name}`,
 			iconPath: new ThemeIcon('home')
 		}) as Terminal;
-		window.onDidCloseTerminal((t) => {
-			if (t.processId === terminal.processId) {
-				t.dispose();
+		// Self-disposing listener: releases itself as soon as this terminal closes
+		// so listeners do not accumulate across many terminal creations.
+		const closeListener = window.onDidCloseTerminal((t) => {
+			if (t === terminal) {
+				closeListener.dispose();
 			}
 		});
 		if (attachAdapter) {
@@ -33,12 +36,50 @@ class TerminalFactory {
 				port: 9000,
 				stopPort: 9020
 			});
-			const termAdapter = `node "${join(__dirname, '../../res/terminal-adapter.js')}" ${
-				terminal.port
-			} localhost`;
+			// A random per-connection token so the adapter can reject any
+			// other local process that discovers the port and tries to
+			// connect (see terminal-adapter.js).
+			terminal.authToken = randomBytes(24).toString('hex');
+			const nodeBin = await getTrustedNodeExecutable();
+			if (!nodeBin) {
+				throw new Error(
+					'Could not locate a trusted Node.js executable to launch the terminal adapter.'
+				);
+			}
+			const termAdapter = `"${nodeBin}" "${join(
+				__dirname,
+				'../../res/terminal-adapter.js'
+			)}" ${terminal.port} 127.0.0.1 ${terminal.authToken}`;
 			terminal.sendText(termAdapter);
 		}
 		return terminal;
+	}
+
+	/**
+	 * Drop the cached terminal instance for `type` so the next `getTerminal()`
+	 * call creates a fresh terminal/adapter/port/auth-token instead of
+	 * reusing this one. Used to avoid caching the Token terminal for reuse
+	 * after a credential has been displayed in it.
+	 */
+	static forgetTerminal(type: TLogTerminals): void {
+		switch (type) {
+			case 'serve': {
+				this._serveTerminal = undefined as unknown as Terminal;
+				break;
+			}
+			case 'deploy': {
+				this._deployTerminal = undefined as unknown as Terminal;
+				break;
+			}
+			case 'token': {
+				this._tokenTerminal = undefined as unknown as Terminal;
+				break;
+			}
+			case 'pull': {
+				this._pullTerminal = undefined as unknown as Terminal;
+				break;
+			}
+		}
 	}
 
 	private static async serveTerminal(): Promise<Terminal> {
@@ -112,6 +153,7 @@ export class LogTerminal {
 	};
 	private terminal?: Terminal;
 	private sockConn?: Socket;
+	private type?: TLogTerminals;
 	private eventCb = {
 		data: new EventEmitter<Buffer>(),
 		end: new EventEmitter<void>(),
@@ -188,21 +230,28 @@ export class LogTerminal {
 	 */
 	static async createTerminal(type: TLogTerminals): Promise<LogTerminal> {
 		const _terminal = new LogTerminal();
+		_terminal.type = type;
 		_terminal.terminal = await TerminalFactory.getTerminal(type);
 		return _terminal;
 	}
 
 	#maxRetry = 50;
 	#retryTimeOut = 200;
-	async #connectSocket(port: number, retry = 0): Promise<Socket> {
+	async #connectSocket(port: number, token: string, retry = 0): Promise<Socket> {
 		if (retry > this.#maxRetry) {
 			throw new Error('Timeout: Unable to communicate with the terminal');
 		}
 
-		const sock = createConnection({ port });
+		const sock = createConnection({ port, host: '127.0.0.1' });
 
 		const conn = await new Promise<boolean>((res, rej) => {
-			sock.on('connect', () => res(true));
+			sock.on('connect', () => {
+				// Authenticate as the very first bytes on the wire so the
+				// adapter can identify and accept this connection before any
+				// real terminal data is written to it (see terminal-adapter.js).
+				sock.write(`AUTH:${token}\n`);
+				res(true);
+			});
 			sock.on('ready', () => this.#handleEvent('ready'));
 			sock.on('error', (err) => {
 				const error = err as Error & { code: string };
@@ -215,7 +264,7 @@ export class LogTerminal {
 
 		if (!conn) {
 			await timeOut(this.#retryTimeOut);
-			return await this.#connectSocket(port, ++retry);
+			return await this.#connectSocket(port, token, ++retry);
 		}
 
 		return sock;
@@ -227,10 +276,10 @@ export class LogTerminal {
 	 * At a time only one live connection to the terminal adapter will be maintained
 	 */
 	async connect(): Promise<boolean> {
-		if (!this.terminal || !this.terminal.port) {
+		if (!this.terminal || !this.terminal.port || !this.terminal.authToken) {
 			throw new Error('Invalid Terminal');
 		}
-		const socket = await this.#connectSocket(this.terminal.port);
+		const socket = await this.#connectSocket(this.terminal.port, this.terminal.authToken);
 		socket
 			.on('data', (buf) => this.#handleEvent('data', buf))
 			.on('error', (e) => this.#handleEvent('error', e))
@@ -275,5 +324,17 @@ export class LogTerminal {
 	 */
 	closeTerminal() {
 		return this.terminal && this.terminal.dispose();
+	}
+
+	/**
+	 * Dispose the terminal and stop caching it for reuse, so any credential
+	 * output it may have displayed (e.g. a generated token) is not retained
+	 * in scrollback nor exposed to a later, unrelated session.
+	 */
+	disposeTerminal() {
+		this.closeTerminal();
+		if (this.type) {
+			TerminalFactory.forgetTerminal(this.type);
+		}
 	}
 }

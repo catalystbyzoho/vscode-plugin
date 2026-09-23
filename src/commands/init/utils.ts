@@ -1,7 +1,6 @@
-import { lstat, rm } from 'fs/promises';
 import { Uri, window } from 'vscode';
 import { TOutput } from '../../inputs';
-import { exists } from '../../utils';
+import { exists, safeRemove } from '../../utils';
 
 const keyWords = Object.freeze([
 	'abstract',
@@ -80,7 +79,12 @@ export function isValidClassName(name: string): boolean {
 	return true;
 }
 
-export async function overwrite(name: string, path: string, { dir = true } = {}) {
+export async function overwrite(
+	root: string,
+	name: string,
+	path: string,
+	{ dir = true } = {}
+) {
 	const fnExists = await exists(path);
 	if (fnExists) {
 		const typeName = dir ? 'Folder' : 'File';
@@ -89,17 +93,9 @@ export async function overwrite(name: string, path: string, { dir = true } = {})
 			'Delete'
 		);
 		if (overwrite === 'Delete') {
-			const stats = await lstat(path).catch(() => undefined);
-			if (!stats) {
-				return true;
-			}
-			if (stats.isSymbolicLink()) {
-				window.showErrorMessage(
-					`Refusing to delete ${path}: target is a symbolic link.`
-				);
-				return false;
-			}
-			rm(path, { recursive: dir, force: true }).catch((err) => {
+			try {
+				await safeRemove(root, path, { recursive: dir });
+			} catch (err) {
 				// eslint-disable-next-line no-console
 				console.error(`Error when deleting the ${typeName}: ` + path, (err as Error).stack);
 				window.showErrorMessage(
@@ -107,7 +103,7 @@ export async function overwrite(name: string, path: string, { dir = true } = {})
 						err instanceof Error ? ' Reason: ' + err.message : ''
 					}`
 				);
-			});
+			}
 			return true;
 		}
 		return false;

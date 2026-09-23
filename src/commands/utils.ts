@@ -1,6 +1,26 @@
 import * as vs from 'vscode';
 import _auth from '../auth.js';
 
+const UNTRUSTED_WORKSPACE_MESSAGE =
+	'This action requires a trusted workspace. Workspace configuration such as ' +
+	'lifecycle scripts, plugins, and runtime paths is not executed in untrusted workspaces.';
+
+/**
+ * Defense-in-depth trust check to be called directly at a destructive/CLI-invoking
+ * operation sink (e.g. inside a webview action handler), in addition to any
+ * `registerCommands(..., { trusted: true })` gate applied at command registration.
+ *
+ * @returns `true` if the workspace is trusted, `false` otherwise (an error message
+ * is shown to the user in the untrusted case).
+ */
+export function requireTrustedWorkspace(): boolean {
+	if (!vs.workspace.isTrusted) {
+		vs.window.showErrorMessage(UNTRUSTED_WORKSPACE_MESSAGE);
+		return false;
+	}
+	return true;
+}
+
 /**
  * Registers the required vscode commands
  *
@@ -11,10 +31,24 @@ import _auth from '../auth.js';
  */
 export function registerCommands(
 	cmd: Array<[string, (...args: Array<unknown>) => unknown]>,
-	{ thisArgs, auth = false }: { thisArgs?: unknown; auth?: boolean } = {}
+	{
+		thisArgs,
+		auth = false,
+		trusted = false
+	}: { thisArgs?: unknown; auth?: boolean; trusted?: boolean } = {}
 ): Array<vs.Disposable> {
 	const commandDisposables: Array<vs.Disposable> = [];
 	cmd.forEach(([command, handler]) => {
+		if (trusted) {
+			const _handler = handler;
+			handler = (...args: Array<any>) => {
+				if (!vs.workspace.isTrusted) {
+					vs.window.showErrorMessage(UNTRUSTED_WORKSPACE_MESSAGE);
+					return;
+				}
+				return _handler(...args);
+			};
+		}
 		if (auth) {
 			const _handler = handler;
 			handler = (...args: Array<any>) => {
@@ -25,7 +59,7 @@ export function registerCommands(
 					console.log(err);
 					return;
 				}
-				_handler(...args);
+				return _handler(...args);
 			};
 		}
 		commandDisposables.push(

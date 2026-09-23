@@ -11,21 +11,6 @@ function setCatalystState(obj) {
 	vscode.setState(Object.assign(curState, obj));
 }
 
-/**
- * Mask a token for display, revealing only the last 4 characters
- * e.g. "abcd1234efgh" -> "********efgh"
- */
-function maskToken(tk) {
-	if (typeof tk !== 'string') {
-		return tk;
-	}
-	const visible = 4;
-	if (tk.length <= visible) {
-		return '*'.repeat(tk.length);
-	}
-	return '*'.repeat(tk.length - visible) + tk.slice(-visible);
-}
-
 window.addEventListener('message', (event) => {
 	const message = Object.keys(event.data).length === 0 ? vscode.getState() : event.data;
 	if (!message) {
@@ -63,19 +48,21 @@ window.addEventListener('message', (event) => {
 		handleRemoteComponentDetails(message.compDetails);
 	}
 	if ('tokenDetails' in message) {
-		// Only persist masked tokens to the webview's on-disk memento
-		// (vscode.setState). Raw token strings are kept in-memory only
-		// (see `runtime.tokenDetails`) so they are not written to disk.
+		// The extension host only ever sends masked token values here (see
+		// `getMaskedTokens()`), so it is safe to persist and cache as-is.
 		setCatalystState({
-			tokenDetails: Array.isArray(message.tokenDetails)
-				? message.tokenDetails.map(([tkId, tk, createdTime]) => [
-						tkId,
-						maskToken(tk),
-						createdTime
-				  ])
-				: message.tokenDetails
+			tokenDetails: message.tokenDetails
 		});
-		handleTokenDetails(message.tokenDetails, { masked: message !== event.data });
+		handleTokenDetails(message.tokenDetails);
+	}
+	if ('tokenReveal' in message) {
+		const { error } = message.tokenReveal || {};
+		if (error) {
+			// eslint-disable-next-line no-console
+			console.error('Unable to reveal token: ' + error); // No I18N
+		}
+		// The raw token value is never sent to the webview; the extension host
+		// displays it in its own UI. Nothing further to handle here.
 	}
 	if ('avatarImg' in message) {
 		setCatalystState({
@@ -87,6 +74,7 @@ window.addEventListener('message', (event) => {
 		message.loading === true ? displayLoading() : displayLoading(false);
 	}
 });
+
 
 function handleUserDetails(userDetails) {
 	runtime.userDetails = userDetails;
@@ -639,20 +627,17 @@ function handleRemoteComponentDetails(details) {
 	}
 }
 
-function handleTokenDetails(tkDetails, { masked = false } = {}) {
+function handleTokenDetails(tkDetails) {
 	displayLoading(false);
-	// Only cache raw token values in memory when they came from a live
-	// extension message (never from restored/masked webview state), so full
-	// tokens are never persisted to disk via `vscode.setState`.
-	runtime.tokenDetails = masked ? undefined : tkDetails;
-	runtime.tokenDetailsMasked = masked;
+	// Values here are always masked by the extension host; safe to keep.
+	runtime.tokenDetails = tkDetails;
 	if (!Array.isArray(tkDetails)) {
 		return;
 	}
 	const manageTokens = document.querySelector('#manageTokenModal .project-list');
 	manageTokens.innerHTML = '';
 
-	tkDetails.forEach(([tkId, tk, createdTime]) => {
+	tkDetails.forEach(([tkId, maskedTk, createdTime]) => {
 		const tokenCard = document.createElement('div');
 		tokenCard.classList.add('project-card');
 
@@ -661,31 +646,27 @@ function handleTokenDetails(tkDetails, { masked = false } = {}) {
 		const tokenDetails = document.createElement('div');
 		tokenDetails.classList.add('dF');
 
-		let revealed = false;
 		const tokenId = document.createElement('div');
 		tokenId.classList.add('manage-token-id', 'line-ellipsis');
-		tokenId.innerText = maskToken(tk);
-		tokenId.setAttribute(
-			'title',
-			masked ? 'Reload the view to reveal the token' : 'Click to reveal/hide the token'
-		);
+		tokenId.innerText = maskedTk;
+		tokenId.setAttribute('title', 'Click to reveal token in editor');
 		tokenId.style.cursor = 'pointer';
 		tokenId.addEventListener('click', () => {
-			if (masked) {
-				// Raw token isn't available from restored state; fetch it live
-				// instead of ever displaying/copying the masked placeholder.
-				refreshWebView();
-				return;
-			}
-			revealed = !revealed;
-			tokenId.innerText = revealed ? tk : maskToken(tk);
+			// The host shows the raw token in a VS Code InputBox so it never
+			// enters the webview's JavaScript context or DOM.
+			vscode.postMessage({
+				action: {
+					name: 'token_reveal', // No I18N
+					data: tkId
+				}
+			});
 		});
 		tokenDetails.appendChild(tokenId);
 
 		const copyTkSpan = document.createElement('span');
 		copyTkSpan.classList.add('icon-copyic', 'cP');
-		copyTkSpan.addEventListener('click', () => (masked ? refreshWebView() : copyToken(tk)));
-		copyTkSpan.setAttribute('title', masked ? 'Reload the view to copy the token' : 'Copy');
+		copyTkSpan.addEventListener('click', () => copyToken(tkId));
+		copyTkSpan.setAttribute('title', 'Copy');
 		tokenDetails.appendChild(copyTkSpan);
 		detailsDiv.appendChild(tokenDetails);
 
@@ -788,11 +769,11 @@ function pullAPIG() {
 	});
 }
 
-function copyToken(tk) {
+function copyToken(tokenId) {
 	vscode.postMessage({
 		action: {
 			name: 'token_copy',
-			data: tk
+			data: tokenId
 		}
 	});
 }

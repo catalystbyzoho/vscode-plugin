@@ -240,8 +240,9 @@ async function initFunctions(fnGroup?: EFnGroup): Promise<Inputs | void> {
 									return 'Invalid function name';
 								}
 								return overwrite(
+									catalystRoot,
 									val,
-									resolveSafePath(
+									await resolveSafePath(
 										catalystRoot,
 										catalystJson?.functions?.source || 'functions',
 										val as string
@@ -278,7 +279,7 @@ async function initFunctions(fnGroup?: EFnGroup): Promise<Inputs | void> {
 						'Package Name',
 						'Please enter a name for the NodeJS package',
 						{
-							validate: (val) => {
+							validate: async (val) => {
 								if (val.length > 50) {
 									return 'Function name should be less than or equal to 50 characters in length';
 								}
@@ -289,8 +290,9 @@ async function initFunctions(fnGroup?: EFnGroup): Promise<Inputs | void> {
 									return 'invalid package name';
 								}
 								return overwrite(
+									catalystRoot,
 									val,
-									resolveSafePath(
+									await resolveSafePath(
 										catalystRoot,
 										catalystJson?.functions?.source || 'functions',
 										val as string
@@ -354,7 +356,7 @@ async function initFunctions(fnGroup?: EFnGroup): Promise<Inputs | void> {
 						'Package name',
 						'Please enter a name for your python package',
 						{
-							validate: (val) => {
+							validate: async (val) => {
 								if (val.length > 50) {
 									return 'Function name should be less than or equal to 50 characters in length';
 								}
@@ -365,8 +367,9 @@ async function initFunctions(fnGroup?: EFnGroup): Promise<Inputs | void> {
 									return 'invalid package name';
 								}
 								return overwrite(
+									catalystRoot,
 									val,
-									resolveSafePath(
+									await resolveSafePath(
 										catalystRoot,
 										catalystJson?.functions?.source || 'functions',
 										val as string

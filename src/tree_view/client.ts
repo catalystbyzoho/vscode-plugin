@@ -7,7 +7,7 @@ import {
 	IClientDetail,
 	IPluginConfig
 } from '../util_types/config.js';
-import { readJsonFile, timeOut } from '../utils.js';
+import { readJsonFile, resolveSafePath, timeOut } from '../utils.js';
 import { refreshEvent } from '../events.js';
 import { getCatalystJson } from '../catalyst/index.js';
 import { setStatusBarMessage } from '../status-bar.js';
@@ -158,7 +158,7 @@ export class ClientTree implements vs.TreeDataProvider<ClientTreeItem | ClientOp
 		if (!clientConfig) {
 			return new ClientTree(catalystRoot, '');
 		}
-		const clientSource = join(catalystRoot, clientConfig.source);
+		const clientSource = await resolveSafePath(catalystRoot, clientConfig.source);
 		// eslint-disable-next-line no-console
 		const clientDetail = await readClientPackage(clientSource).catch((err) =>
 			// eslint-disable-next-line no-console
@@ -210,7 +210,13 @@ export class ClientTree implements vs.TreeDataProvider<ClientTreeItem | ClientOp
 			if (!clientJson.source) {
 				return res();
 			}
-			this.clientSource = join(this.catalystRoot, clientJson.source);
+			try {
+				this.clientSource = await resolveSafePath(this.catalystRoot, clientJson.source);
+			} catch (err) {
+				// eslint-disable-next-line no-console
+				console.error('Invalid client source path: ' + clientJson.source, err);
+				return res();
+			}
 			// eslint-disable-next-line no-console
 			const clientDetail = await readClientPackage(this.clientSource).catch((err) =>
 				// eslint-disable-next-line no-console

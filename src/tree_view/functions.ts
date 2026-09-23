@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { exists, isEmpty, readJsonFile } from '../utils.js';
+import { exists, isEmpty, readJsonFile, resolveSafePath } from '../utils.js';
 import { extname, join } from 'path';
 import type {
 	ICatalystFnConfigJson,
@@ -279,7 +279,11 @@ class FunctionsTreeProvider
 			? catalystJson
 			: await getCatalystJson({ catalystRoot: this.catalystRoot, refresh: true });
 		const fnRoot =
-			this.fnRoot || join(this.catalystRoot, catalystJson?.functions?.source || 'functions');
+			this.fnRoot ||
+			(await resolveSafePath(
+				this.catalystRoot,
+				catalystJson?.functions?.source || 'functions'
+			));
 		const filledFunctions = await setStatusBarMessage(
 			`$(sync~spin) Refreshing functions view...`,
 			fillTreeProviderFunctions(this.catalystRoot, fnRoot, {
@@ -342,7 +346,10 @@ export class FunctionsTree {
 
 			return fnTreeObj;
 		}
-		const fnRoot = join(catalystRoot, catalystFunctionConfig.source || 'functions');
+		const fnRoot = await resolveSafePath(
+			catalystRoot,
+			catalystFunctionConfig.source || 'functions'
+		);
 		const fn = catalystFunctionConfig.targets;
 		const fnRootExits = await exists(fnRoot);
 		if (!fnRootExits) {
@@ -401,7 +408,7 @@ async function fillTreeProviderFunctions(
 		const catalystJson = await getCatalystJson();
 		if (catalystJson && catalystJson.functions) {
 			fnTargets.push(...catalystJson.functions.targets);
-			fnRoot = join(catalystRoot, catalystJson.functions.source);
+			fnRoot = await resolveSafePath(catalystRoot, catalystJson.functions.source);
 		} else {
 			functionsFilled.fnRoot = undefined;
 			return functionsFilled;
@@ -413,7 +420,14 @@ async function fillTreeProviderFunctions(
 			if (!fnRoot) {
 				return;
 			}
-			const fnSource = join(fnRoot, fnTarget);
+			let fnSource: string;
+			try {
+				fnSource = await resolveSafePath(fnRoot, fnTarget);
+			} catch (err) {
+				// eslint-disable-next-line no-console
+				console.error('Invalid function target path: ' + fnTarget, err);
+				return;
+			}
 			const catalystConfig = await readJsonFile<ICatalystFnConfigJson>(
 				join(fnSource, FILENAMES.CATALYST_CONFIG_JSON)
 			);

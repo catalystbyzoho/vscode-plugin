@@ -1,5 +1,5 @@
 import * as vs from 'vscode';
-import { readJsonFile, setContext, timeOut } from '../utils.js';
+import { readJsonFile, resolveSafePath, setContext, timeOut } from '../utils.js';
 import { join } from 'path';
 import { ICatalystJson, ICatalystJsonApig } from '../util_types/config.js';
 import { refreshEvent } from '../events.js';
@@ -111,22 +111,25 @@ export class ApigTreeItem extends vs.TreeItem {
 	apigConfig: ICatalystJsonApig;
 	private catalystRoot: string;
 	private apigRules: Record<string, string | unknown>;
+	private _apigSource: string;
 	options: Array<ApigOptions> = [];
 	private constructor(
 		catalystRoot: string,
 		apigConfig: ICatalystJsonApig,
-		apigRules: Record<string, string | unknown>
+		apigRules: Record<string, string | unknown>,
+		apigSource: string
 	) {
 		super('APIG', vs.TreeItemCollapsibleState.Collapsed);
 		this.catalystRoot = catalystRoot;
 		this.apigConfig = apigConfig;
 		this.apigRules = apigRules;
+		this._apigSource = apigSource;
 		this.contextValue = 'apigTreeItem';
 		this.iconPath = new vs.ThemeIcon('zcatalyst-apig');
 	}
 
 	get apigSource(): string {
-		return join(this.catalystRoot, this.apigConfig.rules);
+		return this._apigSource;
 	}
 
 	get apigStatus(): boolean {
@@ -135,13 +138,12 @@ export class ApigTreeItem extends vs.TreeItem {
 
 	static async init(catalystRoot: string, catalystJson: ICatalystJson): Promise<ApigTreeItem> {
 		const apigConfig = catalystJson.apig as ICatalystJsonApig;
-		const apigRules = await readJsonFile<Record<string, string | unknown>>(
-			join(catalystRoot, apigConfig.rules)
-		);
+		const apigSource = await resolveSafePath(catalystRoot, apigConfig.rules);
+		const apigRules = await readJsonFile<Record<string, string | unknown>>(apigSource);
 		if (!apigRules) {
 			throw new Error('Unable to read the APIG rules');
 		}
-		const treeItemObject = new ApigTreeItem(catalystRoot, apigConfig, apigRules);
+		const treeItemObject = new ApigTreeItem(catalystRoot, apigConfig, apigRules, apigSource);
 		treeItemObject.options.push(
 			new ApigDeploy(apigConfig),
 			new ApigStatus(catalystRoot, catalystJson)

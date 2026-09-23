@@ -101,5 +101,5 @@ export default function registerDeleteCommands(): Array<Disposable> {
 		[cmdPrefix + 'function', deleteFunction],
 		[cmdPrefix + 'client', deleteClient]
 	];
-	return registerCommands(deleteCommands, { auth: true });
+	return registerCommands(deleteCommands, { auth: true, trusted: true });
 }

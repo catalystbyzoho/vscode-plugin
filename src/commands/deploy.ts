@@ -317,5 +317,5 @@ export default function registerDeployCommands(): Array<Disposable> {
 		[cmdPrefix + 'client', deployClient],
 		[cmdPrefix + 'apig', deployAPIG]
 	];
-	return registerCommands(deployCommands, { auth: true });
+	return registerCommands(deployCommands, { auth: true, trusted: true });
 }

@@ -8,7 +8,7 @@ import {
 	LOGIN,
 	CATALYST_CONSTANTS
 } from '../../catalyst';
-import { getTokens } from '../../catalyst/auth';
+import { getMaskedTokens, getTokenById } from '../../catalyst/auth';
 import {
 	ClientHistory,
 	getCurrentOrg,
@@ -24,12 +24,12 @@ import {
 } from '../../catalyst/project';
 import { setStatusBarMessage } from '../../status-bar';
 import { TokenTerminal } from '../../terminal/token';
-import { exists, getWorkSpaceRoot, resolveSafePath, setContext } from '../../utils';
+import { exists, getWorkSpaceRoot, resolveSafePath, safeRemove, setContext } from '../../utils';
 import { overwrite } from '../init/utils';
 import { PullTerminal } from '../../terminal/pull';
 import Inputs from '../../inputs';
-import { lstat, rm } from 'fs/promises';
 import { init } from '../init';
+import { requireTrustedWorkspace } from '../utils.js';
 import { TSAppSailDetails } from 'zcatalyst-cli/lib/endpoints/lib/appsail';
 
 const { ORIGIN } = CATALYST_CONSTANTS;
@@ -259,7 +259,7 @@ export async function getAllViewDetails(
 			pic && panel.webview.postMessage({ avatarImg: pic.toString('base64') });
 		});
 
-		panel.webview.postMessage({ tokenDetails: getTokens() });
+		panel.webview.postMessage({ tokenDetails: getMaskedTokens() });
 		return;
 	}
 
@@ -274,7 +274,7 @@ export async function getAllViewDetails(
 			appsails: await appsailPromise,
 			apig: await apigPromise
 		},
-		tokenDetails: getTokens(),
+		tokenDetails: getMaskedTokens(),
 		avatarImg: userPic ? userPic.toString('base64') : undefined
 	};
 }
@@ -302,6 +302,10 @@ export default async function actionHandler(
 		}
 		case 'project_switch': {
 			try {
+				if (!requireTrustedWorkspace()) {
+					panel.webview.postMessage({ loading: false });
+					break;
+				}
 				const catalystRoot = getCatalystRoot();
 				const switchRes = await setStatusBarMessage(
 					'$(loading~spin) Switching project...',
@@ -316,8 +320,7 @@ export default async function actionHandler(
 					throw switchRes.error;
 				}
 
-				const allViewDetails = await getAllViewDetails(panel);
-				panel.webview.postMessage(allViewDetails);
+				await getAllViewDetails(panel);
 				window.showInformationMessage('Project successfully switched');
 			} catch (err) {
 				window.showErrorMessage(formatErrorMessage('Unable to switch project', err));
@@ -329,6 +332,10 @@ export default async function actionHandler(
 		}
 		case 'project_reset': {
 			try {
+				if (!requireTrustedWorkspace()) {
+					panel.webview.postMessage({ loading: false });
+					break;
+				}
 				const catalystRoot = getCatalystRoot();
 				const resetRes = await setStatusBarMessage(
 					'$(loading~spin) Resetting project...',
@@ -339,7 +346,7 @@ export default async function actionHandler(
 					throw resetRes.error;
 				}
 
-				panel.webview.postMessage(await getAllViewDetails(panel));
+				await getAllViewDetails(panel);
 				window.showInformationMessage('Project reset successful');
 			} catch (err) {
 				window.showErrorMessage(formatErrorMessage('Unable to reset project', err));
@@ -351,11 +358,15 @@ export default async function actionHandler(
 		}
 		case 'project_reinit': {
 			try {
+				if (!requireTrustedWorkspace()) {
+					panel.webview.postMessage({ loading: false });
+					break;
+				}
 				await init({
 					skipFeature: true,
 					projectId: action.data as string
 				});
-				panel.webview.postMessage(await getAllViewDetails(panel));
+				await getAllViewDetails(panel);
 			} catch (err) {
 				// eslint-disable-next-line no-console
 				console.error('PROJECT RE-INIT ERROR: ', err);
@@ -364,20 +375,61 @@ export default async function actionHandler(
 			}
 			break;
 		}
-		case 'token_copy': {
-			window
-				.showWarningMessage(
-					'Copy this Catalyst token to the clipboard? Tokens grant full account access — only copy it if you trust the destination and the current clipboard is not shared/synced.',
-					{ modal: true },
-					'Copy'
-				)
-				.then((choice) => {
-					if (choice === 'Copy') {
-						env.clipboard
-							.writeText(action.data as string)
-							.then(() => window.showInformationMessage('Token copied to clipboard'));
-					}
+		case 'token_reveal': {
+			// Show the raw token value inside a VS Code InputBox on the
+			// extension host — the raw value never enters the webview's
+			// JavaScript context or DOM.
+			const tokenId = action.data as string;
+			const tokenEntry = getTokenById(tokenId);
+			if (!tokenEntry) {
+				panel.webview.postMessage({
+					tokenReveal: { tokenId, error: 'Token not found' }
 				});
+				break;
+			}
+			await window.showInputBox({
+				value: tokenEntry[1],
+				prompt: 'Catalyst token — select all and copy. This dialog does not persist the value.',
+				ignoreFocusOut: false
+			});
+			// Notify the webview that the reveal completed, without sending
+			// the raw token value.
+			panel.webview.postMessage({
+				tokenReveal: { tokenId, revealed: true }
+			});
+			break;
+		}
+		case 'token_copy': {
+			// Identify the token by ID and look up the raw value on the host
+			// side; never trust/accept a raw token string from the webview.
+			const tokenId = action.data as string;
+			const tokenEntry = getTokenById(tokenId);
+			if (!tokenEntry) {
+				window.showErrorMessage('Unable to copy token: token not found');
+				break;
+			}
+			const choice = await window.showWarningMessage(
+				'Copy this Catalyst token to the clipboard? Tokens grant full account access — only copy it if you trust the destination and the current clipboard is not shared/synced.',
+				{ modal: true },
+				'Copy'
+			);
+			if (choice === 'Copy') {
+				await env.clipboard.writeText(tokenEntry[1]);
+				window.showInformationMessage(
+					'Token copied to clipboard. It will be cleared automatically in 30 seconds.'
+				);
+				// Accepted residual risk: any OS clipboard write is accessible to
+				// other local processes, clipboard managers, and sync services
+				// before the auto-clear fires. This is an inherent OS-level
+				// property; the 30-second bounded window is the maximum
+				// mitigation available within the VS Code extension API.
+				setTimeout(async () => {
+					const current = await env.clipboard.readText();
+					if (current === tokenEntry[1]) {
+						await env.clipboard.writeText('');
+					}
+				}, 30_000);
+			}
 			break;
 		}
 		case 'token_revoke': {
@@ -399,7 +451,7 @@ export default async function actionHandler(
 			}
 
 			panel.webview.postMessage({
-				tokenDetails: getTokens()
+				tokenDetails: getMaskedTokens()
 			});
 			break;
 		}
@@ -416,19 +468,24 @@ export default async function actionHandler(
 			}
 
 			panel.webview.postMessage({
-				tokenDetails: getTokens()
+				tokenDetails: getMaskedTokens()
 			});
 			break;
 		}
 		case 'apig_pull': {
 			try {
+				if (!requireTrustedWorkspace()) {
+					panel.webview.postMessage({ loading: false });
+					break;
+				}
 				const catalystJson = await getCatalystJson();
 				const catalystRoot = getCatalystRoot();
-				const apigRulesPath = resolveSafePath(
+				const apigRulesPath = await resolveSafePath(
 					catalystRoot,
 					catalystJson?.apig?.rules || 'catalyst-user-rules.json'
 				);
 				const overwriteRes = await overwrite(
+					catalystRoot,
 					catalystJson?.apig?.rules || 'catalyst-user-rules.json',
 					apigRulesPath,
 					{
@@ -484,6 +541,10 @@ export default async function actionHandler(
 		}
 		case 'functions_pull': {
 			try {
+				if (!requireTrustedWorkspace()) {
+					panel.webview.postMessage({ loading: false });
+					break;
+				}
 				if (!Array.isArray(action.data)) {
 					throw new Error('Unknown data');
 				}
@@ -504,7 +565,7 @@ export default async function actionHandler(
 					(action.data as Array<string>).map(async (fn) => {
 						return new Promise<void>(async (res) => {
 							try {
-								const fnPath = resolveSafePath(catalystRoot, fnRoot, fn);
+								const fnPath = await resolveSafePath(catalystRoot, fnRoot, fn);
 								const pathExists = await exists(fnPath);
 								pathExists
 									? fns.needOverWrites.push({ fnName: fn, path: fnPath })
@@ -541,11 +602,13 @@ export default async function actionHandler(
 						(fnsRes.functions as Array<{ fnName: string; path: string }>).map(
 							async (fn) => {
 								fns.newFns.push(fn.fnName);
-								const stats = await lstat(fn.path).catch(() => undefined);
-								if (!stats || stats.isSymbolicLink()) {
-									return;
-								}
-								return rm(fn.path, { recursive: true, force: true });
+								return safeRemove(catalystRoot, fn.path).catch((err) => {
+									// eslint-disable-next-line no-console
+									console.error(
+										`Error when deleting the function folder: ${fn.path}`,
+										err
+									);
+								});
 							}
 						)
 					));
@@ -577,12 +640,17 @@ export default async function actionHandler(
 		}
 		case 'client_pull': {
 			try {
+				if (!requireTrustedWorkspace()) {
+					panel.webview.postMessage({ loading: false });
+					break;
+				}
 				const catalystRoot = getCatalystRoot();
 				const catalystJson = await getCatalystJson();
 				const clientSource = catalystJson?.client?.source || 'client';
 				const overwriteRes = await overwrite(
+					catalystRoot,
 					clientSource,
-					resolveSafePath(catalystRoot, clientSource)
+					await resolveSafePath(catalystRoot, clientSource)
 				);
 				if (!overwriteRes) {
 					throw new Error(`Unable to Overwrite Folder(${clientSource})`);
@@ -611,7 +679,11 @@ export default async function actionHandler(
 		}
 		case 'open_link': {
 			try {
-				env.openExternal(Uri.parse((action.data || '') as string));
+				const uri = Uri.parse((action.data || '') as string);
+				if (uri.scheme !== 'https' && uri.scheme !== 'http') {
+					throw new Error('Unsupported link scheme: ' + uri.scheme);
+				}
+				env.openExternal(uri);
 			} catch (err) {
 				window.showErrorMessage(
 					formatErrorMessage('Unable to open the link in browser', err)

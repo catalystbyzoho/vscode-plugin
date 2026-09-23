@@ -340,5 +340,5 @@ export function registerInitCommands(): Array<Disposable> {
 		[cmdPrefix + 'appSail', appSailAdd],
 		[cmdPrefix + 'client', clientSetup]
 	];
-	return registerCommands(initCommands, { auth: true });
+	return registerCommands(initCommands, { auth: true, trusted: true });
 }

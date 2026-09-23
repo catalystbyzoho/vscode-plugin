@@ -2,7 +2,7 @@ process.env.ZCATALYST_VSCODE = 'true';
 
 import * as vscode from 'vscode';
 import { join } from 'path';
-import { runtime, refreshTreeView, readJsonFile, setContext } from './utils.js';
+import { runtime, refreshTreeView, readJsonFile, setContext, getTrustedNodeExecutable } from './utils.js';
 import { CatalystJsonCodeLensProvider } from './code-lens.js';
 import { registerInitCommands } from './commands/init/index.js';
 import registerDeployCommands from './commands/deploy.js';
@@ -20,6 +20,29 @@ import initializeSettings from './settings.js';
 import auth from './auth.js';
 import { displayNoFolderView } from './tree_view/utils.js';
 
+const SUPPORTED_NODE_STACKS = ['node12', 'node14', 'node16', 'node18', 'node20'];
+
+/**
+ * Hand the CLI a trusted, absolute Node runtime through its own supported
+ * `executables.<version>.bin` config channel (the same mechanism used for
+ * explicit user-configured runtime paths in `settings.ts`), instead of
+ * mutating the shared, global `process.execPath`.
+ */
+async function registerHostNodeRuntime(): Promise<void> {
+	const nodeVersion = 'node' + process.versions.node.split('.')[0];
+	if (!SUPPORTED_NODE_STACKS.includes(nodeVersion)) {
+		return;
+	}
+	// Do not override an explicit user-configured runtime path for this version.
+	if (cliRuntime.get(`executables.${nodeVersion}.bin`)) {
+		return;
+	}
+	const hostNodeBin = await getTrustedNodeExecutable();
+	if (hostNodeBin) {
+		cliRuntime.set(`executables.${nodeVersion}.bin`, hostNodeBin);
+	}
+}
+
 export async function activate(context: vscode.ExtensionContext) {
 	try {
 		// try {
@@ -29,7 +52,6 @@ export async function activate(context: vscode.ExtensionContext) {
 		// 	throw err;
 		// }
 
-		process.execPath = 'node'; //overwriting the default execPath
 		const disposables: Array<vscode.Disposable> = [];
 		//register commands - 1
 		disposables.push(...registerAuthCommands());
@@ -38,6 +60,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		// initialize settings
 		disposables.push(...initializeSettings());
+
+		// resolve a trusted, absolute Node runtime for the CLI without
+		// mutating the global process.execPath (see registerHostNodeRuntime)
+		await registerHostNodeRuntime();
 
 		// enable view welcome buttons
 		await setContext('viewWelcome.enable', true);
